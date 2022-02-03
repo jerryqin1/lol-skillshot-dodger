@@ -23,12 +23,12 @@ def main():
     pg.display.set_caption('Skillshot dodger')
 
     # Fill background
-    background = pg.Surface(screen.get_size())
+    background = pg.image.load("resources/background.jpg")
+    background = pg.transform.scale(background, screen.get_size())
     background = background.convert()
-    background.fill((250, 250, 250))
 
     # Blit everything to the screen
-    screen.blit(background, (0, 0))
+    screen.blit(background, [0, 0])
     pg.display.flip()
 
     player = Player()
@@ -43,6 +43,8 @@ def main():
             if event.type == QUIT:
                 return
             elif event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE:
+                    return
                 if event.key == pg.K_DOWN:
                     player.move_down()
                 elif event.key == pg.K_UP:
@@ -81,19 +83,19 @@ class Player(pg.sprite.Sprite):
 
     def move_down(self):
         x, y = self.rect.topleft
-        self.rect.topleft = (x, y+5)
+        self.rect.topleft = (x, y+10)
 
     def move_up(self):
         x, y = self.rect.topleft
-        self.rect.topleft = (x, y-5)
+        self.rect.topleft = (x, y-10)
 
     def move_right(self):
         x, y = self.rect.topleft
-        self.rect.topleft = (x+5, y)
+        self.rect.topleft = (x+10, y)
 
     def move_left(self):
         x, y = self.rect.topleft
-        self.rect.topleft = (x-5, y)
+        self.rect.topleft = (x-10, y)
 
 
     def update(self):
