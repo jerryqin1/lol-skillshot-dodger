@@ -13,7 +13,14 @@ WIN_HEIGHT = 512
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "resources")
-directions = ["up", "left", "right", "down"]
+directions = ['N', 'E', 'W', 'S', 'NW', 'NE', 'SW', 'SE']
+
+
+
+### TODO:
+###      1. code refactoring: create wrapper for main() (hold it in a Game class) and allow for environemnt reset and runthrough
+###      2. fine tune collision parameters / hitboxes
+###      3.
 
 def main():
     # Initialise screen
@@ -45,7 +52,7 @@ def main():
     obstacles.append(fireball)
     pg.key.set_repeat(2)
 
-    pg.time.set_timer(USEREVENT + 2, random.randrange(200, 350)) # determines how often we generate a fireball
+    pg.time.set_timer(USEREVENT + 2, random.randrange(200, 300)) # determines how often we generate a fireball
     # Event loop
     while True:
         # dt = clock.tick(120)
@@ -56,18 +63,12 @@ def main():
         player_c_x += player.rect.width / 2
         player_c_y += player.rect.height / 2
         # player_radius = math.sqrt((player.rect.width / 2) ** 2 +(player.rect.height / 2) ** 2)
-        player_radius = 34
+        # player_radius = 34
 
         for obstacle in obstacles:
             # move the obstacle
-            if obstacle.direction == "up":
-                obstacle.y -= obstacle.vel
-            elif obstacle.direction == "down":
-                obstacle.y += obstacle.vel
-            elif obstacle.direction == "left":
-                obstacle.x -= obstacle.vel
-            else:
-                obstacle.x += obstacle.vel
+            obstacle.x += obstacle.x_vel
+            obstacle.y += obstacle.y_vel
 
             fireball_radius = int (obstacle.rect.width / 2)
             obs_c_x = obstacle.x + fireball_radius
@@ -149,25 +150,59 @@ class Fireball(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
         i = np.random.choice([0, 1])
         if i % 2 == 0:
-            self.x = np.random.randint(0, WIN_HEIGHT)
-            self.y = np.random.choice([0, WIN_WIDTH])
+            self.x = np.random.randint(0, WIN_WIDTH)
+            self.y = np.random.choice([0, WIN_HEIGHT])
         else:
             self.x = np.random.choice([0, WIN_WIDTH])
             self.y = np.random.randint(0, WIN_HEIGHT)
         self.rotateCount = 0
-        self.vel = np.random.randint(10, 12)
         self.image, self.rect = load_image("fireball.png", scale=0.15)
-        self.direction = self.getDirection(self.x, self.y)
+        self.direction = self.getDirection()
+        self.x_vel, self.y_vel = self.getVel()
 
-    def getDirection(self, x, y):
-        if x == 0:
-            return "right"
-        if x == WIN_WIDTH:
-            return "left"
-        if y == 0:
-            return "down"
-        if y == WIN_HEIGHT:
-            return "up"
+    def getVel(self):
+        n = len(self.direction)
+        x_vel = 0
+        y_vel = 0
+
+        if self.direction[0] == 'N':
+            y_vel = -np.random.randint(10, 12)
+        elif self.direction[0] == 'S':
+            y_vel = np.random.randint(10, 12)
+        elif self.direction[0] == 'W':
+            x_vel = -np.random.randint(10, 12)
+        else:
+            x_vel = np.random.randint(10, 12)
+
+        if n == 2:
+            x_vel = -np.random.randint(10, 12) if self.direction[1] == 'W' else np.random.randint(10, 12)
+
+        return x_vel, y_vel
+
+    def getDirection(self):
+        if self.x == 0:
+            if self.y < (WIN_HEIGHT / 2):
+                return np.random.choice(['SE', 'SE', 'E'])
+            else:
+                return np.random.choice(['NE', 'NE', 'E'])
+        elif self.x == WIN_WIDTH:
+            if self.y < (WIN_HEIGHT / 2):
+                return np.random.choice(['SW', 'SW', 'W'])
+            else:
+                return np.random.choice(['NW', 'NW', 'W'])
+
+        if self.y == 0:
+            if self.x < (WIN_WIDTH / 2):
+                return np.random.choice(['SE', 'SE', 'S'])
+            else:
+                return np.random.choice(['SW', 'SW', 'S'])
+        elif self.y == WIN_HEIGHT:
+            if self.x < (WIN_WIDTH / 2):
+                return np.random.choice(['NE', 'NE', 'N'])
+            else:
+                return np.random.choice(['NW', 'NW', 'N'])
+
+
 
     def draw(self, screen):
         print("sheesh")
