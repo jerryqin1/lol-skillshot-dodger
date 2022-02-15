@@ -20,7 +20,10 @@ def main():
     pg.init()
     screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
     pg.display.set_caption('Skillshot Dodger')
+    font = pg.font.SysFont("comic sans", 40)
+
     obstacles = []
+    score = 0
     # pg.time.set_timer(USEREVENT + 2, random.randrange(2000, 3500))
 
     # Fill background
@@ -48,6 +51,7 @@ def main():
     while True:
         # dt = clock.tick(120)
         clock.tick(60)
+        score += 1
 
         player_c_x, player_c_y = player.rect.topleft
         player_c_x += player.rect.width / 2
@@ -113,6 +117,9 @@ def main():
         for obstacle in obstacles:
             obstacle.update()
 
+        scoretext = font.render("Score: " + str(score), True, (255, 255, 255), (0, 0, 0))
+        screen.blit(scoretext, (5, 5))
+
         # Draw Everything
         pg.display.update()
         screen.blit(background, (0, 0))
@@ -121,7 +128,9 @@ def main():
         for obstacle in obstacles:
             obstacle.draw(screen)
 
-        pg.display.flip()
+        # pg.display.flip()
+
+    print('Final score: ' + str(score))
 
 def load_image(name, colorkey=None, scale=1):
     fullname = os.path.join(data_dir, name)
