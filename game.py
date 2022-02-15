@@ -33,6 +33,7 @@ def main():
     pg.display.flip()
 
     player = Player()
+
     allsprites = pg.sprite.RenderPlain((player))
     clock = pg.time.Clock()
 
@@ -49,9 +50,10 @@ def main():
         clock.tick(60)
 
         player_c_x, player_c_y = player.rect.topleft
-        player_c_x += player.rect.width
-        player_c_y += player.rect.height
-        player_radius = math.sqrt(player.rect.width ** 2 + player.rect.width ** 2)
+        player_c_x += player.rect.width / 2
+        player_c_y += player.rect.height / 2
+        # player_radius = math.sqrt((player.rect.width / 2) ** 2 +(player.rect.height / 2) ** 2)
+        player_radius = 34
 
         for obstacle in obstacles:
             # move the obstacle
@@ -68,9 +70,16 @@ def main():
             obs_c_x = obstacle.x + fireball_radius
             obs_c_y = obstacle.y + fireball_radius
 
-            distance = math.dist((player_c_x, player_x_y), (obs_c_x, obs_c_y))
+            distance = math.dist((player_c_x, player_c_y), (obs_c_x, obs_c_y))
 
-            if distance < fireball_radius + player_radius:
+            # if distance < fireball_radius + player_radius:
+            if distance < 32:
+                print('h/w', player.rect.height, player.rect.width)
+                print(distance)
+                print(fireball_radius)
+                print(player_radius)
+                print((player_c_x, player_c_y), (obs_c_x, obs_c_y))
+                print("I got hit")
                 return
 
         for event in pg.event.get():
@@ -135,13 +144,14 @@ class Fireball(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
         i = np.random.choice([0, 1])
         if i % 2 == 0:
-            self.x = np.random.randint(0, WIN_WIDTH)
-            self.y = np.random.choice([0, WIN_HEIGHT])
+            self.x = np.random.randint(0, WIN_HEIGHT)
+            self.y = np.random.choice([0, WIN_WIDTH])
         else:
-            self.x = np.random.choice([0, WIN_HEIGHT])
-            self.y = np.random.randint(0, WIN_WIDTH)
+            self.x = np.random.choice([0, WIN_WIDTH])
+            self.y = np.random.randint(0, WIN_HEIGHT)
         self.rotateCount = 0
-        self.vel = np.random.randint(10, 18)
+        # self.vel = np.random.randint(10, 18)
+        self.vel = np.random.randint(1,2)
         self.image, self.rect = load_image("fireball.jpeg", scale=0.15)
         self.direction = self.getDirection(self.x, self.y)
 
@@ -157,14 +167,16 @@ class Fireball(pg.sprite.Sprite):
 
     def draw(self, screen):
         print("sheesh")
-        self.hitbox = (self.x + 10, self.y + 10, 28, 10)  # defines the hitbox
-        pg.draw.rect(screen, (255, 0, 0), self.hitbox, 2)
+        # self.hitbox = (self.x + 10, self.y + 10, 28, 10)  # defines the hitbox
+        # pg.draw.rect(screen, (255, 0, 0), self.hitbox, 2)
         screen.blit(self.image, (self.x, self.y)) # not sure why this is so choppy lol
 
 class Player(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
-        self.image, self.rect = load_image("player-sprite.gif", scale=0.15)
+        # self.image, self.rect = load_image("player-sprite.gif", scale=0.15)
+        self.image, self.rect = load_image("player2.jpg", scale=0.15)
+        self.rect.topleft = (WIN_WIDTH / 2, WIN_HEIGHT / 2)
 
     def move_down(self):
         x, y = self.rect.topleft
