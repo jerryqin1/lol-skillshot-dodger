@@ -1,19 +1,12 @@
 #!/usr/bin/python
 
-try:
-    import sys
-    import random
-    import numpy as np
-    #import math
-    import os
-    #import getopt
-    import pygame as pg
-    from socket import *
-    from pygame.locals import *
-except ImportError, err:
-    print "couldn't load module. %s" % (err)
-    sys.exit(2)
-    
+import sys
+import random
+import numpy as np
+import os
+import pygame as pg
+from pygame.locals import *
+
 WIN_WIDTH = 768
 WIN_HEIGHT = 512
 
@@ -55,7 +48,6 @@ def main():
         clock.tick(60)
 
         for obstacle in obstacles:
-
             # move the obstacle
             if obstacle.direction == "up":
                 obstacle.y -= obstacle.vel
@@ -65,14 +57,10 @@ def main():
                 obstacle.x -= obstacle.vel
             else:
                 obstacle.x += obstacle.vel
-            obstacle.draw(screen)
-        pg.display.update()  # to render the fireballs each time loop
 
         for event in pg.event.get():
-
             # generate a new fireball
             if event.type == USEREVENT+2:
-                r = np.random.choice([0, 1])
                 obstacles.append(Fireball())
 
             if event.type == QUIT:
@@ -98,10 +86,17 @@ def main():
             print(key_direction)
 
         allsprites.update()
+        for obstacle in obstacles:
+            obstacle.update()
 
         # Draw Everything
+        pg.display.update()
         screen.blit(background, (0, 0))
         allsprites.draw(screen)
+
+        for obstacle in obstacles:
+            obstacle.draw(screen)
+
         pg.display.flip()
 
 def load_image(name, colorkey=None, scale=1):
@@ -119,19 +114,20 @@ def load_image(name, colorkey=None, scale=1):
         image.set_colorkey(colorkey, pg.RLEACCEL)
     return image, image.get_rect()
 
-class Fireball(object):
+class Fireball(pg.sprite.Sprite):
     # need to define some rational pictures so we can have fireballs in many directions
     # rotate = [pg.image.load(os.path.join('resources', 'SAW0.PNG')), pg.image.load(os.path.join('resources', 'SAW1.PNG')),
     #           pg.image.load(os.path.join('resources', 'SAW2.PNG')), pg.image.load(os.path.join('resources', 'SAW3.PNG'))]
     def __init__(self):
         # generate random location for the fireball on edge of screen
+        pg.sprite.Sprite.__init__(self)  # call Sprite initializer
         i = np.random.choice([0, 1])
         if i % 2 == 0:
-            self.x = np.random.randint(0, 1450)
-            self.y = np.random.choice([0, 900])
+            self.x = np.random.randint(0, WIN_WIDTH)
+            self.y = np.random.choice([0, WIN_HEIGHT])
         else:
-            self.y = np.random.randint(0, 900)
-            self.x = np.random.choice([0, 1450])
+            self.x = np.random.choice([0, WIN_HEIGHT])
+            self.y = np.random.randint(0, WIN_WIDTH)
         self.width = 1
         self.height = 1
         self.rotateCount = 0
@@ -142,14 +138,15 @@ class Fireball(object):
     def getDirection(self, x, y):
         if x == 0:
             return "right"
-        if x == 1450:
+        if x == WIN_WIDTH:
             return "left"
         if y == 0:
             return "down"
-        if y == 900:
+        if y == WIN_HEIGHT:
             return "up"
 
     def draw(self, screen):
+        print("sheesh")
         self.hitbox = (self.x + 10, self.y + 10, 28, 10)  # defines the hitbox
         pg.draw.rect(screen, (255, 0, 0), self.hitbox, 2)
         screen.blit(self.image, (self.x, self.y)) # not sure why this is so choppy lol
