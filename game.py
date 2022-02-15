@@ -2,6 +2,7 @@
 
 import sys
 import random
+import math
 import numpy as np
 import os
 import pygame as pg
@@ -47,6 +48,11 @@ def main():
         # dt = clock.tick(120)
         clock.tick(60)
 
+        player_c_x, player_c_y = player.rect.topleft
+        player_c_x += player.rect.width
+        player_c_y += player.rect.height
+        player_radius = math.sqrt(player.rect.width ** 2 + player.rect.width ** 2)
+
         for obstacle in obstacles:
             # move the obstacle
             if obstacle.direction == "up":
@@ -57,6 +63,15 @@ def main():
                 obstacle.x -= obstacle.vel
             else:
                 obstacle.x += obstacle.vel
+
+            fireball_radius = int (obstacle.rect.width / 2)
+            obs_c_x = obstacle.x + fireball_radius
+            obs_c_y = obstacle.y + fireball_radius
+
+            distance = math.dist((player_c_x, player_x_y), (obs_c_x, obs_c_y))
+
+            if distance < fireball_radius + player_radius:
+                return
 
         for event in pg.event.get():
             # generate a new fireball
@@ -69,7 +84,7 @@ def main():
 
             key_direction = np.array([0,0])
             if pressed_keys[K_LEFT]: key_direction[0] = -1
-            if pressed_keys[K_RIGHT]: key_direction[0] = 1 
+            if pressed_keys[K_RIGHT]: key_direction[0] = 1
             if pressed_keys[K_DOWN]: key_direction[1] = 1
             if pressed_keys[K_UP]: key_direction[1] = -1
 
@@ -125,8 +140,6 @@ class Fireball(pg.sprite.Sprite):
         else:
             self.x = np.random.choice([0, WIN_HEIGHT])
             self.y = np.random.randint(0, WIN_WIDTH)
-        self.width = 1
-        self.height = 1
         self.rotateCount = 0
         self.vel = np.random.randint(10, 18)
         self.image, self.rect = load_image("fireball.jpeg", scale=0.15)
@@ -177,7 +190,6 @@ class Player(pg.sprite.Sprite):
         # self.rect.move_ip(self.fist_offset)
         # if self.punching:
         #     self.rect.move_ip(15, 25)
-
 
 
 if __name__ == '__main__':
