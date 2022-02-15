@@ -24,7 +24,6 @@ def main():
 
     obstacles = []
     score = 0
-    # pg.time.set_timer(USEREVENT + 2, random.randrange(2000, 3500))
 
     # Fill background
     background = pg.image.load("resources/background.jpg")
@@ -78,12 +77,8 @@ def main():
 
             # if distance < fireball_radius + player_radius:
             if distance < 32:
-                print('h/w', player.rect.height, player.rect.width)
-                print(distance)
-                print(fireball_radius)
-                print(player_radius)
-                print((player_c_x, player_c_y), (obs_c_x, obs_c_y))
                 print("I got hit")
+                print("Final score:", score)
                 return
 
         for event in pg.event.get():
@@ -159,8 +154,7 @@ class Fireball(pg.sprite.Sprite):
             self.x = np.random.choice([0, WIN_WIDTH])
             self.y = np.random.randint(0, WIN_HEIGHT)
         self.rotateCount = 0
-        # self.vel = np.random.randint(10, 18)
-        self.vel = np.random.randint(1,2)
+        self.vel = np.random.randint(10, 12)
         self.image, self.rect = load_image("fireball.jpeg", scale=0.15)
         self.direction = self.getDirection(self.x, self.y)
 
@@ -184,7 +178,7 @@ class Player(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
         # self.image, self.rect = load_image("player-sprite.gif", scale=0.15)
-        self.image, self.rect = load_image("player2.jpg", scale=0.15)
+        self.image, self.rect = load_image("poro_icon.png", scale=1.7)
         self.rect.topleft = (WIN_WIDTH / 2, WIN_HEIGHT / 2)
 
     def move_down(self):
