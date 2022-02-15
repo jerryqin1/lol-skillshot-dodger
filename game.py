@@ -130,6 +130,7 @@ def main():
 def load_image(name, colorkey=None, scale=1):
     fullname = os.path.join(data_dir, name)
     image = pg.image.load(fullname)
+    image.set_colorkey((0,0,0))
 
     size = image.get_size()
     size = (int(size[0] * scale), int(size[1] * scale))
@@ -155,7 +156,7 @@ class Fireball(pg.sprite.Sprite):
             self.y = np.random.randint(0, WIN_HEIGHT)
         self.rotateCount = 0
         self.vel = np.random.randint(10, 12)
-        self.image, self.rect = load_image("fireball.jpeg", scale=0.15)
+        self.image, self.rect = load_image("fireball.png", scale=0.15)
         self.direction = self.getDirection(self.x, self.y)
 
     def getDirection(self, x, y):
