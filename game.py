@@ -115,9 +115,6 @@ def load_image(name, colorkey=None, scale=1):
     return image, image.get_rect()
 
 class Fireball(pg.sprite.Sprite):
-    # need to define some rational pictures so we can have fireballs in many directions
-    # rotate = [pg.image.load(os.path.join('resources', 'SAW0.PNG')), pg.image.load(os.path.join('resources', 'SAW1.PNG')),
-    #           pg.image.load(os.path.join('resources', 'SAW2.PNG')), pg.image.load(os.path.join('resources', 'SAW3.PNG'))]
     def __init__(self):
         # generate random location for the fireball on edge of screen
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
@@ -132,7 +129,7 @@ class Fireball(pg.sprite.Sprite):
         self.height = 1
         self.rotateCount = 0
         self.vel = np.random.randint(10, 18)
-        self.image, self.rect = load_image("fireball.jpeg", scale=0.3)
+        self.image, self.rect = load_image("fireball.jpeg", scale=0.15)
         self.direction = self.getDirection(self.x, self.y)
 
     def getDirection(self, x, y):
