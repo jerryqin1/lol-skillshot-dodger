@@ -13,6 +13,9 @@ try:
 except ImportError, err:
     print "couldn't load module. %s" % (err)
     sys.exit(2)
+    
+WIN_WIDTH = 768
+WIN_HEIGHT = 512
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "resources")
@@ -21,7 +24,7 @@ directions = ["up", "left", "right", "down"]
 def main():
     # Initialise screen
     pg.init()
-    screen = pg.display.set_mode((1500, 1000))
+    screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
     pg.display.set_caption('Skillshot Dodger')
     obstacles = []
     # pg.time.set_timer(USEREVENT + 2, random.randrange(2000, 3500))
@@ -47,7 +50,8 @@ def main():
 
     pg.time.set_timer(USEREVENT + 2, random.randrange(200, 350)) # determines how often we generate a fireball
     # Event loop
-    while 1:
+    while True:
+        # dt = clock.tick(120)
         clock.tick(60)
 
         for obstacle in obstacles:
@@ -73,17 +77,26 @@ def main():
 
             if event.type == QUIT:
                 return
-            elif event.type == pg.KEYDOWN:
-                if event.key == pg.K_ESCAPE:
-                    return
-                if event.key == pg.K_DOWN:
-                    player.move_down()
-                elif event.key == pg.K_UP:
-                    player.move_up()
-                elif event.key == pg.K_RIGHT:
-                    player.move_right()
-                elif event.key == pg.K_LEFT:
-                    player.move_left()
+            pressed_keys = pg.key.get_pressed()
+
+            key_direction = np.array([0,0])
+            if pressed_keys[K_LEFT]: key_direction[0] = -1
+            if pressed_keys[K_RIGHT]: key_direction[0] = 1 
+            if pressed_keys[K_DOWN]: key_direction[1] = 1
+            if pressed_keys[K_UP]: key_direction[1] = -1
+
+            # key_direction *= dt # ?? - keeps frames consistent but its very fast
+            # TODO: no fractional movement
+            # Idea - keep track of actual position and round before displaying to screen
+            # norm = np.linalg.norm(key_direction)
+            # if norm > 0:
+            #     key_direction = key_direction / norm
+            #     print(key_direction)
+
+            x, y = player.rect.topleft
+            player.rect.topleft = (x + key_direction[0], y + key_direction[1])
+            print(key_direction)
+
         allsprites.update()
 
         # Draw Everything
@@ -122,7 +135,7 @@ class Fireball(object):
         self.height = 1
         self.rotateCount = 0
         self.vel = np.random.randint(10, 18)
-        self.image, self.rect = load_image("fireball.png", scale=0.3)
+        self.image, self.rect = load_image("fireball.jpeg", scale=0.3)
         self.direction = self.getDirection(self.x, self.y)
 
     def getDirection(self, x, y):
