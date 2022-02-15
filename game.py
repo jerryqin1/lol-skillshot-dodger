@@ -42,7 +42,7 @@ def main():
     allsprites = pg.sprite.RenderPlain((player))
     clock = pg.time.Clock()
 
-    fireball = Fireball(0)
+    fireball = Fireball()
     fireball.draw(screen)
 
     obstacles.append(fireball)
@@ -73,7 +73,7 @@ def main():
             # generate a new fireball
             if event.type == USEREVENT+2:
                 r = np.random.choice([0, 1])
-                obstacles.append(Fireball(r))
+                obstacles.append(Fireball())
 
             if event.type == QUIT:
                 return
@@ -123,8 +123,9 @@ class Fireball(object):
     # need to define some rational pictures so we can have fireballs in many directions
     # rotate = [pg.image.load(os.path.join('resources', 'SAW0.PNG')), pg.image.load(os.path.join('resources', 'SAW1.PNG')),
     #           pg.image.load(os.path.join('resources', 'SAW2.PNG')), pg.image.load(os.path.join('resources', 'SAW3.PNG'))]
-    def __init__(self, i):
+    def __init__(self):
         # generate random location for the fireball on edge of screen
+        i = np.random.choice([0, 1])
         if i % 2 == 0:
             self.x = np.random.randint(0, 1450)
             self.y = np.random.choice([0, 900])
