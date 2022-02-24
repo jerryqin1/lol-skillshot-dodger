@@ -252,5 +252,9 @@ class GameState:
         clock.tick(FPS)
         return image_data, 1, terminal, self.score
 
+game = GameState()
 
-
+term = False
+while not term:
+    action = np.random.randint(0, 9)
+    data, _, term, _ = game.step(action)
