@@ -16,13 +16,6 @@ main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "resources")
 directions = ['N', 'E', 'W', 'S', 'NW', 'NE', 'SW', 'SE']
 
-
-
-### TODO:
-###      1. code refactoring: create wrapper for main() (hold it in a Game class) and allow for environemnt reset and runthrough
-###      2. fine tune collision parameters / hitboxes
-###      3.
-
 def check_bump(x_pos, y_pos, sprite_width, sprite_height):
     if x_pos <= 0:
         x_pos = BUMP_DIST
@@ -35,116 +28,6 @@ def check_bump(x_pos, y_pos, sprite_width, sprite_height):
         y_pos = WIN_HEIGHT - BUMP_DIST - sprite_height
 
     return x_pos, y_pos
-
-def main():
-    # Initialise screen
-    pg.init()
-    screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
-    pg.display.set_caption('Skillshot Dodger')
-    font = pg.font.SysFont("comic sans", 40)
-
-    obstacles = []
-    score = 0
-
-    # Fill background
-    background = pg.image.load("resources/background.jpg")
-    background = pg.transform.scale(background, screen.get_size())
-    background = background.convert()
-
-    # Blit everything to the screen
-    screen.blit(background, [0, 0])
-    pg.display.flip()
-
-    player = Player()
-
-    allsprites = pg.sprite.RenderPlain((player))
-    clock = pg.time.Clock()
-
-    fireball = Fireball()
-    fireball.draw(screen)
-
-    obstacles.append(fireball)
-    pg.key.set_repeat(2)
-
-    # pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200)) # determines how often we generate a fireball
-    # Event loop
-    while True:
-        # dt = clock.tick(120)
-        clock.tick(60)
-        score += 1
-
-        player_c_x, player_c_y = player.rect.topleft
-        player_c_x += player.rect.width / 2
-        player_c_y += player.rect.height / 2
-        # player_radius = math.sqrt((player.rect.width / 2) ** 2 +(player.rect.height / 2) ** 2)
-        # player_radius = 34
-
-        for obstacle in obstacles:
-            # move the obstacle
-            obstacle.x += obstacle.x_vel
-            obstacle.y += obstacle.y_vel
-
-            fireball_radius = int (obstacle.rect.width / 2)
-            obs_c_x = obstacle.x + fireball_radius
-            obs_c_y = obstacle.y + fireball_radius
-
-            distance = math.dist((player_c_x, player_c_y), (obs_c_x, obs_c_y))
-
-            # if distance < fireball_radius + player_radius:
-            if distance < 32:
-                print("I got hit")
-                print("Final score:", score)
-                return
-
-        for event in pg.event.get():
-            # generate a new fireball
-            if event.type == USEREVENT+2:
-                obstacles.append(Fireball())
-
-            if event.type == QUIT:
-                return
-            pressed_keys = pg.key.get_pressed()
-
-            key_direction = np.array([0,0])
-            if pressed_keys[K_LEFT]: key_direction[0] = -1
-            if pressed_keys[K_RIGHT]: key_direction[0] = 1
-            if pressed_keys[K_DOWN]: key_direction[1] = 1
-            if pressed_keys[K_UP]: key_direction[1] = -1
-
-            # key_direction *= dt # ?? - keeps frames consistent but its very fast
-            # TODO: no fractional movement
-            # Idea - keep track of actual position and round before displaying to screen
-            # norm = np.linalg.norm(key_direction)
-            # if norm > 0:
-            #     key_direction = key_direction / norm
-            #     print(key_direction)
-
-            x, y = player.rect.topleft
-            x, y = check_bump(x + key_direction[0], y + key_direction[1], 40, 32)
-            player.rect.topleft = (x, y)
-
-            print(key_direction)
-
-        allsprites.update()
-        for obstacle in obstacles:
-            obstacle.update()
-
-        scoretext = font.render("Score: " + str(score), True, (255, 255, 255), (0, 0, 0))
-        screen.blit(scoretext, (5, 5))
-
-        # Draw Everything
-        pg.display.update()
-        screen.blit(background, (0, 0))
-        allsprites.draw(screen)
-
-        for obstacle in obstacles:
-            if obstacle.x <= -20 or obstacle.y <= -20 or obstacle.x >= WIN_WIDTH + 20 or obstacle.y >= WIN_HEIGHT + 20:
-                obstacles.pop(obstacles.index(obstacle))
-            else:
-                obstacle.draw(screen)
-
-
-    print('Final score: ' + str(score))
 
 def load_image(name, colorkey=None, scale=1):
     fullname = os.path.join(data_dir, name)
@@ -264,5 +147,110 @@ class Player(pg.sprite.Sprite):
         #     self.rect.move_ip(15, 25)
 
 
-if __name__ == '__main__':
-    main()
+### TODO:
+###      1. code refactoring: create wrapper for main() (hold it in a Game class) and allow for environemnt reset and runthrough
+###      2. fine tune collision parameters / hitboxes
+###      3.
+
+pg.init()
+screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+
+# Fill background
+background = pg.image.load("resources/background.jpg")
+background = pg.transform.scale(background, screen.get_size())
+background = background.convert()
+
+class GameState:
+    def __init__(self):
+        self.player = Player()
+        self.allsprites = pg.sprite.RenderPlain((self.player))
+        self.score = 0
+        self.obstacles = []
+        self.ACTION_MAP = {
+            0 : (0, 0),
+            1 : (0, 1),
+            2 : (1, 1),
+            3 : (1, 0),
+            4 : (1, -1),
+            5 : (0, -1),
+            6 : (-1, -1),
+            7 : (-1, 0),
+            8: (-1, 1),
+        }
+
+    def step(self, action):
+        # dt = clock.tick(120)
+        # clock.tick(60)
+
+        terminal = False
+
+        pg.event.pump()
+
+        # TODO - fix this
+        self.score += 1
+
+        player_c_x, player_c_y = self.player.rect.topleft
+        player_c_x += self.player.rect.width / 2
+        player_c_y += self.player.rect.height / 2
+
+        for obstacle in self.obstacles:
+            # move the obstacle
+            obstacle.x += obstacle.x_vel
+            obstacle.y += obstacle.y_vel
+
+            fireball_radius = int (obstacle.rect.width / 2)
+            obs_c_x = obstacle.x + fireball_radius
+            obs_c_y = obstacle.y + fireball_radius
+
+            distance = math.dist((player_c_x, player_c_y), (obs_c_x, obs_c_y))
+
+            # if distance < fireball_radius + player_radius:
+            if distance < 32:
+                print("I got hit")
+                print("Final score:", self.score)
+                terminal = True
+                break
+
+        # TODO - obs gen
+        for event in pg.event.get():
+            # generate a new fireball
+            if event.type == USEREVENT+2:
+                self.obstacles.append(Fireball())
+
+        key_direction = self.ACTION_MAP[action]
+
+        x, y = self.player.rect.topleft
+        x, y = check_bump(x + key_direction[0], y + key_direction[1], 40, 32)
+        self.player.rect.topleft = (x, y)
+
+        self.allsprites.update()
+        for obstacle in self.obstacles:
+            obstacle.update()
+
+        # scoretext = font.render("Score: " + str(score), True, (255, 255, 255), (0, 0, 0))
+        # screen.blit(scoretext, (5, 5))
+
+        # Draw Everything
+        pg.display.update()
+        screen.blit(background, (0, 0))
+        self.allsprites.draw(screen)
+
+        for obstacle in self.obstacles:
+            if obstacle.x <= -20 or obstacle.y <= -20 or obstacle.x >= WIN_WIDTH + 20 or obstacle.y >= WIN_HEIGHT + 20:
+                self.obstacles.pop(self.obstacles.index(obstacle))
+            else:
+                obstacle.draw(screen)
+
+        image_data = pg.surfarray.array3d(pg.display.get_surface())
+        # FPSCLOCK.tick(FPS)
+        return image_data, 1 if not terminal else -100, terminal, self.score
+
+pg.init()
+screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+
+game = GameState()
+np.random.seed(6)
+for i in range(10000):
+    action = np.random.randint(0, 8)
+    frame, _, _, _ = game.step(action)
+
