@@ -245,12 +245,12 @@ class GameState:
         # FPSCLOCK.tick(FPS)
         return image_data, 1 if not terminal else -100, terminal, self.score
 
-pg.init()
-screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
-
-game = GameState()
-np.random.seed(6)
-for i in range(10000):
-    action = np.random.randint(0, 8)
-    frame, _, _, _ = game.step(action)
+# pg.init()
+# screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+#
+# game = GameState()
+# np.random.seed(6)
+# for i in range(10000):
+#     action = np.random.randint(0, 8)
+#     frame, _, _, _ = game.step(action)
 

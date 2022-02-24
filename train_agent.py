@@ -1,5 +1,9 @@
-from dqn_agent import DQNAgent
+# from dqn_agent import DQNAgent
 from pipeline import GameState
+import numpy as np
+import pygame as pg
+from pipeline import WIN_HEIGHT, WIN_WIDTH
+
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -20,8 +24,16 @@ if __name__ == '__main__':
     results = dict()
 
     # train lol
-    for name in names:
-        params['name'] = name
-        env = GameState()
-        agent = DQNAgent(env, params)
-        results['name'] = agent.train(episodes=150)
+    # for name in names:
+    #     params['name'] = name
+    #     env = GameState()
+    #     agent = DQNAgent(env, params)
+    #     results['name'] = agent.train(episodes=150)
+
+    pg.init()
+    screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+    game = GameState()
+    #np.random.seed(1000)
+    for i in range(10000):
+        action = np.random.randint(0, 9)
+        frame, _, _, _ = game.step(action)
