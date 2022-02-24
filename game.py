@@ -66,7 +66,7 @@ def main():
     obstacles.append(fireball)
     pg.key.set_repeat(2)
 
-    # pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200)) # determines how often we generate a fireball
+    pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200)) # determines how often we generate a fireball
     # Event loop
     while True:
         # dt = clock.tick(120)
@@ -174,7 +174,7 @@ class Fireball(pg.sprite.Sprite):
             self.x = np.random.choice([0, WIN_WIDTH])
             self.y = np.random.randint(0, WIN_HEIGHT)
         self.rotateCount = 0
-        self.image, self.rect = load_image("fireball.png", scale=0.15)
+        self.image, self.rect = load_image("fireball4.png", scale=0.044)
         self.direction = self.getDirection()
         self.x_vel, self.y_vel = self.getVel()
 
@@ -183,20 +183,23 @@ class Fireball(pg.sprite.Sprite):
         x_vel = 0
         y_vel = 0
 
+        MAX_SPD = 5
+        MID_SPD = 2
+        MIN_SPD = 1
         if self.direction[0] == 'N':
-            y_vel = -np.random.randint(1, 14)
+            y_vel = -np.random.randint(MIN_SPD, MAX_SPD)
         elif self.direction[0] == 'S':
-            y_vel = np.random.randint(1, 14)
+            y_vel = np.random.randint(MIN_SPD, MAX_SPD)
         elif self.direction[0] == 'W':
-            x_vel = -np.random.randint(1, 14)
+            x_vel = -np.random.randint(MIN_SPD, MAX_SPD)
         else:
-            x_vel = np.random.randint(1, 14)
+            x_vel = np.random.randint(MIN_SPD, MAX_SPD)
 
         if n == 2:
             if y_vel < 7:
-                x_vel = -np.random.randint(12, 14) if self.direction[1] == 'W' else np.random.randint(12, 14)
+                x_vel = -np.random.randint(MAX_SPD - 2, MAX_SPD) if self.direction[1] == 'W' else np.random.randint(MAX_SPD - 2, MAX_SPD)
             else:
-                x_vel = -np.random.randint(1, 7) if self.direction[1] == 'W' else np.random.randint(1, 7)
+                x_vel = -np.random.randint(MIN_SPD, MID_SPD) if self.direction[1] == 'W' else np.random.randint(MIN_SPD, MID_SPD)
 
         return x_vel, y_vel
 
