@@ -7,6 +7,7 @@ import numpy as np
 import os
 import pygame as pg
 from pygame.locals import *
+### Todo: reset() for dqn
 
 WIN_WIDTH = 768
 WIN_HEIGHT = 512
@@ -172,6 +173,7 @@ class GameState:
         self.player = Player()
         self.allsprites = pg.sprite.RenderPlain((self.player))
         self.score = 0
+        self.state_space = WIN_HEIGHT * WIN_WIDTH
         self.obstacles = []
         self.ACTION_MAP = {
             0 : (0, 0),
@@ -252,9 +254,16 @@ class GameState:
         clock.tick(FPS)
         return image_data, 1, terminal, self.score
 
-game = GameState()
+    def reset(self):
+        pg.init()
+        screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+        pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
 
-term = False
-while not term:
-    action = np.random.randint(0, 9)
-    data, _, term, _ = game.step(action)
+        # Fill background
+        background = pg.image.load("resources/background.jpg")
+        background = pg.transform.scale(background, screen.get_size())
+        background = background.convert()
+        self.score = 0
+        self.player = Player()
+        self.allsprites = pg.sprite.RenderPlain((self.player))
+        self.obstacles = []git

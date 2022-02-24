@@ -38,8 +38,8 @@ if __name__ == '__main__':
 
     for i in range(1000):
         action = np.random.randint(0, 9)
-        dqn = DQNAgent(game, params)
-        dqn.train(1000)
+        # dqn = DQNAgent(game, params)
+        # dqn.train(1000)
         frame, reward, term, _ = game.step(action)
         score += reward
         if term: break
