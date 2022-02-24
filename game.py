@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys
+import argparse
 import random
 import math
 import numpy as np
@@ -8,14 +9,18 @@ import os
 import pygame as pg
 from pygame.locals import *
 
+parser = argparse.ArgumentParser(description='Choose gameplay mode.')
+# parser.add_argument()
+
 WIN_WIDTH = 768
 WIN_HEIGHT = 512
 BUMP_DIST = 3
 
+simple = True
+
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "resources")
 directions = ['N', 'E', 'W', 'S', 'NW', 'NE', 'SW', 'SE']
-
 
 
 ### TODO:
@@ -36,6 +41,7 @@ def check_bump(x_pos, y_pos, sprite_width, sprite_height):
 
     return x_pos, y_pos
 
+
 def main():
     # Initialise screen
     pg.init()
@@ -47,7 +53,10 @@ def main():
     score = 0
 
     # Fill background
-    background = pg.image.load("resources/background.jpg")
+    if not simple:
+        background = pg.image.load("resources/background.jpg")
+    else:
+        background = pg.image.load("resources/white_color.png")
     background = pg.transform.scale(background, screen.get_size())
     background = background.convert()
 
@@ -66,7 +75,7 @@ def main():
     obstacles.append(fireball)
     pg.key.set_repeat(2)
 
-    pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200)) # determines how often we generate a fireball
+    pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
     # Event loop
     while True:
         # dt = clock.tick(120)
@@ -84,7 +93,7 @@ def main():
             obstacle.x += obstacle.x_vel
             obstacle.y += obstacle.y_vel
 
-            fireball_radius = int (obstacle.rect.width / 2)
+            fireball_radius = int(obstacle.rect.width / 2)
             obs_c_x = obstacle.x + fireball_radius
             obs_c_y = obstacle.y + fireball_radius
 
@@ -98,14 +107,14 @@ def main():
 
         for event in pg.event.get():
             # generate a new fireball
-            if event.type == USEREVENT+2:
+            if event.type == USEREVENT + 2:
                 obstacles.append(Fireball())
 
             if event.type == QUIT:
                 return
             pressed_keys = pg.key.get_pressed()
 
-            key_direction = np.array([0,0])
+            key_direction = np.array([0, 0])
             if pressed_keys[K_LEFT]: key_direction[0] = -1
             if pressed_keys[K_RIGHT]: key_direction[0] = 1
             if pressed_keys[K_DOWN]: key_direction[1] = 1
@@ -143,13 +152,13 @@ def main():
             else:
                 obstacle.draw(screen)
 
-
     print('Final score: ' + str(score))
+
 
 def load_image(name, colorkey=None, scale=1):
     fullname = os.path.join(data_dir, name)
     image = pg.image.load(fullname)
-    image.set_colorkey((0,0,0))
+    image.set_colorkey((0, 0, 0))
 
     size = image.get_size()
     size = (int(size[0] * scale), int(size[1] * scale))
@@ -161,6 +170,7 @@ def load_image(name, colorkey=None, scale=1):
             colorkey = image.get_at((0, 0))
         image.set_colorkey(colorkey, pg.RLEACCEL)
     return image, image.get_rect()
+
 
 class Fireball(pg.sprite.Sprite):
     def __init__(self):
@@ -174,7 +184,10 @@ class Fireball(pg.sprite.Sprite):
             self.x = np.random.choice([0, WIN_WIDTH])
             self.y = np.random.randint(0, WIN_HEIGHT)
         self.rotateCount = 0
-        self.image, self.rect = load_image("fireball4.png", scale=0.044)
+        if not simple:
+            self.image, self.rect = load_image("fireball4.png", scale=0.044)
+        else:
+            self.image, self.rect = load_image("simple_red1.png", scale=0.032)
         self.direction = self.getDirection()
         self.x_vel, self.y_vel = self.getVel()
 
@@ -197,9 +210,11 @@ class Fireball(pg.sprite.Sprite):
 
         if n == 2:
             if y_vel < 7:
-                x_vel = -np.random.randint(MAX_SPD - 2, MAX_SPD) if self.direction[1] == 'W' else np.random.randint(MAX_SPD - 2, MAX_SPD)
+                x_vel = -np.random.randint(MAX_SPD - 2, MAX_SPD) if self.direction[1] == 'W' else np.random.randint(
+                    MAX_SPD - 2, MAX_SPD)
             else:
-                x_vel = -np.random.randint(MIN_SPD, MID_SPD) if self.direction[1] == 'W' else np.random.randint(MIN_SPD, MID_SPD)
+                x_vel = -np.random.randint(MIN_SPD, MID_SPD) if self.direction[1] == 'W' else np.random.randint(MIN_SPD,
+                                                                                                                MID_SPD)
 
         return x_vel, y_vel
 
@@ -226,37 +241,38 @@ class Fireball(pg.sprite.Sprite):
             else:
                 return 'NW'
 
-
-
     def draw(self, screen):
         print("sheesh")
         # self.hitbox = (self.x + 10, self.y + 10, 28, 10)  # defines the hitbox
         # pg.draw.rect(screen, (255, 0, 0), self.hitbox, 2)
-        screen.blit(self.image, (self.x, self.y)) # not sure why this is so choppy lol
+        screen.blit(self.image, (self.x, self.y))  # not sure why this is so choppy lol
+
 
 class Player(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
         # self.image, self.rect = load_image("player-sprite.gif", scale=0.15)
-        self.image, self.rect = load_image("poro_icon.png", scale=1.7)
+        if not simple:
+            self.image, self.rect = load_image("poro_icon.png", scale=1.7)
+        else:
+            self.image, self.rect = load_image("simple_green.png", scale=0.028)
         self.rect.topleft = (WIN_WIDTH / 2, WIN_HEIGHT / 2)
 
     def move_down(self):
         x, y = self.rect.topleft
-        self.rect.topleft = (x, y+1)
+        self.rect.topleft = (x, y + 1)
 
     def move_up(self):
         x, y = self.rect.topleft
-        self.rect.topleft = (x, y-1)
+        self.rect.topleft = (x, y - 1)
 
     def move_right(self):
         x, y = self.rect.topleft
-        self.rect.topleft = (x+1, y)
+        self.rect.topleft = (x + 1, y)
 
     def move_left(self):
         x, y = self.rect.topleft
-        self.rect.topleft = (x-1, y)
-
+        self.rect.topleft = (x - 1, y)
 
     def update(self):
         """move the fist based on the mouse position"""
