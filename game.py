@@ -52,7 +52,7 @@ def main():
     obstacles.append(fireball)
     pg.key.set_repeat(2)
 
-    pg.time.set_timer(USEREVENT + 2, random.randrange(200, 300)) # determines how often we generate a fireball
+    pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200)) # determines how often we generate a fireball
     # Event loop
     while True:
         # dt = clock.tick(120)
@@ -168,41 +168,44 @@ class Fireball(pg.sprite.Sprite):
         y_vel = 0
 
         if self.direction[0] == 'N':
-            y_vel = -np.random.randint(10, 12)
+            y_vel = -np.random.randint(1, 14)
         elif self.direction[0] == 'S':
-            y_vel = np.random.randint(10, 12)
+            y_vel = np.random.randint(1, 14)
         elif self.direction[0] == 'W':
-            x_vel = -np.random.randint(10, 12)
+            x_vel = -np.random.randint(1, 14)
         else:
-            x_vel = np.random.randint(10, 12)
+            x_vel = np.random.randint(1, 14)
 
         if n == 2:
-            x_vel = -np.random.randint(10, 12) if self.direction[1] == 'W' else np.random.randint(10, 12)
+            if y_vel < 7:
+                x_vel = -np.random.randint(12, 14) if self.direction[1] == 'W' else np.random.randint(12, 14)
+            else:
+                x_vel = -np.random.randint(1, 7) if self.direction[1] == 'W' else np.random.randint(1, 7)
 
         return x_vel, y_vel
 
     def getDirection(self):
         if self.x == 0:
             if self.y < (WIN_HEIGHT / 2):
-                return np.random.choice(['SE', 'SE', 'E'])
+                return 'SE'
             else:
-                return np.random.choice(['NE', 'NE', 'E'])
+                return 'NE'
         elif self.x == WIN_WIDTH:
             if self.y < (WIN_HEIGHT / 2):
-                return np.random.choice(['SW', 'SW', 'W'])
+                return 'SW'
             else:
-                return np.random.choice(['NW', 'NW', 'W'])
+                return 'NW'
 
         if self.y == 0:
             if self.x < (WIN_WIDTH / 2):
-                return np.random.choice(['SE', 'SE', 'S'])
+                return 'SE'
             else:
-                return np.random.choice(['SW', 'SW', 'S'])
+                return 'SW'
         elif self.y == WIN_HEIGHT:
             if self.x < (WIN_WIDTH / 2):
-                return np.random.choice(['NE', 'NE', 'N'])
+                return 'NE'
             else:
-                return np.random.choice(['NW', 'NW', 'N'])
+                return 'NW'
 
 
 
