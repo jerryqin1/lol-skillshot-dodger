@@ -3,6 +3,7 @@
 import random
 import tensorflow as tf
 import csv
+from pipeline import WIN_WIDTH, WIN_HEIGHT
 import numpy as np
 from keras import Sequential
 from collections import deque
@@ -16,8 +17,8 @@ class DQNAgent:
 
     def __init__(self, env, params):
         self.env = env
-        self.action_space = self.env.action_space
-        self.state_space = self.env.state_space
+        self.action_space = len(self.env.ACTION_MAP)
+        self.state_space = WIN_WIDTH * WIN_HEIGHT
         self.epsilon = params['epsilon']
         self.gamma = params['gamma']
         self.batch_size = params['batch_size']
@@ -25,8 +26,8 @@ class DQNAgent:
         self.epsilon_decay = params['epsilon_decay']
         self.learning_rate = params['learning_rate']
         self.layer_sizes = params['layer_sizes']
-        self.weightFile = "weights_{}".format(self.env.env_info['state_space'])
-        self.dataFile = "rewards_{}".format(self.env.env_info['state_space'])
+        self.weightFile = "weights_{}".format("aaaa")
+        self.dataFile = "rewards_{}".format("aaaa")
         self.memory = deque(maxlen=2500)
         self.model = self.build_model()
 

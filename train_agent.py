@@ -1,4 +1,4 @@
-# from dqn_agent import DQNAgent
+from dqn_agent import DQNAgent
 from pipeline import GameState
 import numpy as np
 import pygame as pg
@@ -33,7 +33,15 @@ if __name__ == '__main__':
     pg.init()
     screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
     game = GameState()
-    #np.random.seed(1000)
-    for i in range(10000):
+    np.random.seed(6)
+    score = 0
+
+    for i in range(1000):
         action = np.random.randint(0, 9)
-        frame, _, _, _ = game.step(action)
+        dqn = DQNAgent(game, params)
+        dqn.train(1000)
+        frame, reward, term, _ = game.step(action)
+        score += reward
+        if term: break
+
+    print('Score', score)
