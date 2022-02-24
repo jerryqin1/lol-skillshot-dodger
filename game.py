@@ -122,9 +122,11 @@ def main():
         allsprites.draw(screen)
 
         for obstacle in obstacles:
-            obstacle.draw(screen)
+            if obstacle.x <= -20 or obstacle.y <= -20 or obstacle.x >= WIN_WIDTH + 20 or obstacle.y >= WIN_HEIGHT + 20:
+                obstacles.pop(obstacles.index(obstacle))
+            else:
+                obstacle.draw(screen)
 
-        # pg.display.flip()
 
     print('Final score: ' + str(score))
 
