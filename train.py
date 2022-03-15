@@ -1,3 +1,5 @@
+from time import sleep, time
+
 from pipeline import GameState
 
 #!/usr/bin/env python
@@ -239,8 +241,6 @@ def trainNetwork(s, readout, _, sess):
             state = ""
             if t <= OBSERVE:
                 state = "observe"
-            elif t > OBSERVE and t <= OBSERVE + EXPLORE:
-                state = "explore"
             else:
                 state = "train"
 
@@ -263,6 +263,9 @@ def trainNetwork(s, readout, _, sess):
                 f.close()
             score = []
             flaps = []
+            sleep(0.01)
+            if t > OBSERVE:
+                sleep(5)
             game_state = GameState()
 
         if terminal == False and testing == False:

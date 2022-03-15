@@ -161,7 +161,6 @@ class Player(pg.sprite.Sprite):
 
 pg.init()
 screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
-pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200)) # determines how often we generate a fireball
 
 # Fill background
 background = pg.image.load("resources/background.jpg")
@@ -170,6 +169,7 @@ background = background.convert()
 
 class GameState:
     def __init__(self):
+        pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
         self.player = Player()
         self.allsprites = pg.sprite.RenderPlain((self.player))
         self.score = 0
