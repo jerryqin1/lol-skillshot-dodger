@@ -195,7 +195,6 @@ def trainNetwork(s, readout, _, sess):
             # popping when above the memory.
             if len(D) > REPLAY_MEMORY:
                 D.popleft()
-                break
 
             # only train if done observing (We've sufficiently filled the replay memory)
             if t > OBSERVE:
@@ -251,12 +250,12 @@ def trainNetwork(s, readout, _, sess):
 
         if terminal and testing:
             counter = counter + 1
-            print("TIMESTEP,", t, "Reward,", sum(score), "Average Reward,", np.mean(net_score), "Flaps,", max(flaps), "Average Flaps,", np.mean(net_flaps), "Standard Deviation Flaps,", np.std(net_flaps))
+            print("TIMESTEP,", t, "Reward,", sum(score), "Average Reward,", np.mean(net_score), "Flaps,", max(flaps))
             score = []
             flaps = []
 
         if terminal and testing == False:
-            string = "GameOver TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(sum(score)) +  ", Average Reward: " + str(np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score)) + ", Flaps: " + str(max(flaps)) +  ", Average Flaps: " + str(np.mean(net_flaps)) + ", Standard Deviation Of Flaps: " + str(np.std(net_flaps))
+            string = "GameOver TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(sum(score)) +  ", Average Reward: " + str(np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score))
             print(string)
             print("Game Over")
             with open(google_drive_colab_path + "net_score_cache_v1_game_over.txt", 'a') as f:
@@ -267,7 +266,7 @@ def trainNetwork(s, readout, _, sess):
             game_state = GameState()
 
         if terminal == False and testing == False:
-            string = "TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(sum(score)) +  ", Average Reward: " + str(np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score)) + ", Flaps: " + str(max(flaps)) +  ", Average Flaps: " + str(np.mean(net_flaps)) + ", Standard Deviation Of Flaps: " + str(np.std(net_flaps))
+            string = "TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(sum(score)) +  ", Average Reward: " + str(np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score))
             print(string)
 
 
