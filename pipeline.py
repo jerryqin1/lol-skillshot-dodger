@@ -23,6 +23,8 @@ def check_bump(x_pos, y_pos, sprite_width, sprite_height):
 
     return x_pos, y_pos
 
+main_dir = os.path.split(os.path.abspath(__file__))[0]
+data_dir = os.path.join(main_dir, "resources")
 
 def load_image(name, colorkey=None, scale=1):
     fullname = os.path.join(data_dir, name)
@@ -147,15 +149,6 @@ class Player(pg.sprite.Sprite):
         self.rect.topleft = (x-1, y)
 
 
-    def update(self):
-        """move the fist based on the mouse position"""
-        # pos = pg.mouse.get_pos()
-        # self.rect.topleft = pos
-        # self.rect.move_ip(self.fist_offset)
-        # if self.punching:
-        #     self.rect.move_ip(15, 25)
-
-
 pg.init()
 
 WIN_WIDTH = 768
@@ -177,9 +170,6 @@ ACTION_MAP = {
 
 screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 clock = pg.time.Clock()
-
-main_dir = os.path.split(os.path.abspath(__file__))[0]
-data_dir = os.path.join(main_dir, "resources")
 
 
 # Fill background
@@ -246,6 +236,7 @@ class GameState:
         key_direction = ACTION_MAP[action]
 
         x, y = self.player.rect.topleft
+        # TODO - change hardcode
         x, y = check_bump(x + key_direction[0], y + key_direction[1], 40, 32)
         self.player.rect.topleft = (x, y)
 

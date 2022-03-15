@@ -239,14 +239,12 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
         s_t = s_t1
         t += 1
 
-        if testing == False:
+        if not testing:
             # save progress every 10000 iterations
             if t % 10000 == 0:
                 saver.save(sess, google_drive_colab_path + 'saved_networks_v1/' + GAME + '-dqn', global_step=t)
                 print("SAVED SUCCESSFULLY")
 
-            # print info
-            state = ""
             if t <= OBSERVE:
                 state = "observe"
             else:
@@ -277,7 +275,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
         #     # sleep(0.01)
         #     # if t > OBSERVE:
         #         # sleep(5)
-        if terminal == False and testing == False:
+        if not terminal and not testing:
             string = "TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(
                 epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(
                 readout_t) + ", Episode Reward: " + str(sum(score)) + ", Average Reward: " + str(
