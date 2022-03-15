@@ -2,9 +2,10 @@ from time import sleep, time
 
 from pipeline import GameState
 
-#!/usr/bin/env python
-#from __future__ import print_function
+# !/usr/bin/env python
+# from __future__ import print_function
 import tensorflow.compat.v1 as tf
+
 tf.disable_v2_behavior()
 import cv2
 import sys
@@ -12,10 +13,9 @@ import random
 import numpy as np
 from collections import deque
 
-
 # seed 1001 was the maximal performance seed.
 testing = False
-seed = 1001
+seed = 2
 np.random.seed(seed)
 random.seed(seed)
 tf.compat.v1.set_random_seed(seed)
@@ -24,34 +24,38 @@ tf.compat.v1.set_random_seed(seed)
 drive = False
 google_drive_colab_path = '/content/drive/My Drive/flappy/' if drive == True else ''
 
-OBSERVE = 1000 # timestpes to init the replay memory.
-EXPLORE = 1000000 # frames over which to decay epsilon
+OBSERVE = 1000  # timestpes to init the replay memory.
+EXPLORE = 1000000  # frames over which to decay epsilon
 
-FINAL_EPSILON = 0.0001 # final value
-INITIAL_EPSILON = 0.4 # starting value
+FINAL_EPSILON = 0.0001  # final value
+INITIAL_EPSILON = 0.4  # starting value
 
-REPLAY_MEMORY = 50000 # number of previous transitions to remember
-BATCH = 32 # size of minibatch
+REPLAY_MEMORY = 50000  # number of previous transitions to remember
+BATCH = 32  # size of minibatch
 FRAME_PER_ACTION = 1
 
-GAME = 'skillshotdodger' # the name of the game being played for log files
-ACTIONS = 9 # number of valid actions
-GAMMA = 0.99 # decay rate of past observations
+GAME = 'skillshotdodger'  # the name of the game being played for log files
+ACTIONS = 9  # number of valid actions
+GAMMA = 0.99  # decay rate of past observations
 
 
 def weight_variable(shape):
-    initial = tf.truncated_normal(shape, stddev = 0.01)
+    initial = tf.truncated_normal(shape, stddev=0.01)
     return tf.Variable(initial)
+
 
 def bias_variable(shape):
-    initial = tf.constant(0.01, shape = shape)
+    initial = tf.constant(0.01, shape=shape)
     return tf.Variable(initial)
 
+
 def conv2d(x, W, stride):
-    return tf.nn.conv2d(x, W, strides = [1, stride, stride, 1], padding = "SAME")
+    return tf.nn.conv2d(x, W, strides=[1, stride, stride, 1], padding="SAME")
+
 
 def max_pool_2x2(x):
-    return tf.nn.max_pool(x, ksize = [1, 2, 2, 1], strides = [1, 2, 2, 1], padding = "SAME")
+    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
+
 
 def createNetwork():
     # network weights
@@ -88,7 +92,8 @@ def createNetwork():
 
     return input_layer, readout, hidden_fully_connected_1
 
-def trainNetwork(s, readout, _, sess):
+
+def train_test(s, readout, _, sess, testing=False, episodes=20000):
     counter = 0
     # define the cost function
     a = tf.placeholder("float", [None, ACTIONS])
@@ -114,13 +119,13 @@ def trainNetwork(s, readout, _, sess):
     # preprocess the image to 80x80x4 and get the image state.
     x_t, _, terminal, _ = game_state.frame_step(do_nothing)
     x_t = cv2.cvtColor(cv2.resize(x_t, (80, 80)), cv2.COLOR_BGR2GRAY)
-    ret, x_t = cv2.threshold(x_t,1,255,cv2.THRESH_BINARY)
+    ret, x_t = cv2.threshold(x_t, 1, 255, cv2.THRESH_BINARY)
     s_t = np.stack((x_t, x_t, x_t, x_t), axis=2)
 
     # saving and loading networks
     saver = tf.train.Saver()
     sess.run(tf.initialize_all_variables())
-    checkpoint = tf.train.get_checkpoint_state("saved_networks")
+    checkpoint = tf.train.get_checkpoint_state("saved_networks_v1")
 
     # are we testing or training? the decision is made here.
     if checkpoint and checkpoint.model_checkpoint_path:
@@ -133,6 +138,7 @@ def trainNetwork(s, readout, _, sess):
 
     # data structures meant for logging
     epsilon = INITIAL_EPSILON
+    episode = 0
     t = 0
     score = []
     net_score = []
@@ -140,10 +146,11 @@ def trainNetwork(s, readout, _, sess):
     flaps = []
 
     # we continue to execute forever, until the game ends.
-    while True:
+    while episode < episodes:
+        # print("STARTING EPISODE: ", episode + 1)
 
-        # get all the actions from the netwokr
-        readout_t = readout.eval(feed_dict={s : [s_t]})[0]
+        # get all the actions from the network
+        readout_t = readout.eval(feed_dict={s: [s_t]})[0]
 
         a_t = np.zeros([ACTIONS])
         action_index = 0
@@ -170,7 +177,7 @@ def trainNetwork(s, readout, _, sess):
                     action_index = np.argmax(readout_t)
                     a_t[action_index] = 1
             else:
-                a_t[0] = 1 # do nothing
+                a_t[0] = 1  # do nothing
 
         # downscale the value of the epsilon.
         if epsilon > FINAL_EPSILON and t > OBSERVE:
@@ -189,7 +196,7 @@ def trainNetwork(s, readout, _, sess):
         score.append(r_t)
 
         # we store memory via the replay memory.
-        if testing == False:
+        if not testing:
 
             # store the transition in D
             D.append((s_t, a_t, r_t, s_t1, terminal))
@@ -211,7 +218,7 @@ def trainNetwork(s, readout, _, sess):
 
                 y_batch = []
 
-                readout_j1_batch = readout.eval(feed_dict = {s : s_j1_batch})
+                readout_j1_batch = readout.eval(feed_dict={s: s_j1_batch})
 
                 for i in range(0, len(minibatch)):
                     terminal = minibatch[i][4]
@@ -222,12 +229,11 @@ def trainNetwork(s, readout, _, sess):
                         y_batch.append(r_batch[i] + GAMMA * np.max(readout_j1_batch[i]))
 
                 # perform gradient step
-                train_step.run(feed_dict = {
-                    y : y_batch,
-                    a : a_batch,
-                    s : s_j_batch}
+                train_step.run(feed_dict={
+                    y: y_batch,
+                    a: a_batch,
+                    s: s_j_batch}
                 )
-                print('testtesteststestsetest')
 
         # update the old values
         s_t = s_t1
@@ -235,8 +241,9 @@ def trainNetwork(s, readout, _, sess):
 
         if testing == False:
             # save progress every 10000 iterations
-            # if t % 10000 == 0:
-            #     saver.save(sess, google_drive_colab_path + 'saved_networks_v1/' + GAME + '-dqn', global_step = t)
+            if t % 10000 == 0:
+                saver.save(sess, google_drive_colab_path + 'saved_networks_v1/' + GAME + '-dqn', global_step=t)
+                print("SAVED SUCCESSFULLY")
 
             # print info
             state = ""
@@ -246,16 +253,17 @@ def trainNetwork(s, readout, _, sess):
                 state = "train"
 
         if terminal:
+            episode += 1
             net_score.append(sum(score))
             net_flaps.append(max(flaps))
             game_state.reset()
             # game_state = GameState()
 
-        # if terminal and testing:
-        #     counter = counter + 1
-        #     print("TIMESTEP,", t, "Reward,", sum(score), "Average Reward,", np.mean(net_score), "Flaps,", max(flaps))
-        #     score = []
-        #     flaps = []
+        if terminal and testing:
+            counter = counter + 1
+            print("TIMESTEP,", t, "Reward,", sum(score), "Average Reward,", np.mean(net_score))
+            score = []
+            flaps = []
 
         # if terminal and testing == False:
         #     string = "GameOver TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(sum(score)) +  ", Average Reward: " + str(np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score))
@@ -269,14 +277,15 @@ def trainNetwork(s, readout, _, sess):
         #     # sleep(0.01)
         #     # if t > OBSERVE:
         #         # sleep(5)
-
-
         if terminal == False and testing == False:
-            string = "TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(sum(score)) +  ", Average Reward: " + str(np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score))
+            string = "TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(
+                epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(
+                readout_t) + ", Episode Reward: " + str(sum(score)) + ", Average Reward: " + str(
+                np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score))
             print(string)
 
 
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
     input_layer, readout, hidden_fully_connected_1 = createNetwork()
-    trainNetwork(input_layer, readout, hidden_fully_connected_1, sess)
+    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 1000)

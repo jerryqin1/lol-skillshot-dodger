@@ -1,8 +1,23 @@
-from dqn_agent import DQNAgent
-from pipeline import GameState
+from train import train_test
+from train import createNetwork
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import random
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+import cv2
+import sys
+import random
+import numpy as np
+from collections import deque
+
+
+testing = True
+seed = 2
+np.random.seed(seed)
+random.seed(seed)
+tf.compat.v1.set_random_seed(seed)
 
 # plots a single traning reward curve for a specific state space representation
 def plot_single_training_reward_curve(model):
@@ -44,25 +59,8 @@ def plot_testing_rewards(test_results, episodes):
         plt.legend()
     plt.show()
 
-if __name__ == '__main__':
-    params = dict()
-    params['name'] = None
-    params['epsilon'] = 0
-    params['gamma'] = .95
-    params['batch_size'] = 500
-    params['epsilon_min'] = 0
-    params['epsilon_decay'] = .995
-    params['learning_rate'] = 0.00025
-    params['layer_sizes'] = [128, 128, 128]
-
-    names = ['model1', 'model2', 'model3']
-    testing_results = {}
-
-    for name in names:
-        params['name'] = name
-        env = GameState()
-        agent = DQNAgent(env, params)
-        testing_results['model'] = agent.test(episodes=10)
-
-    plot_testing_scores(testing_results, 10)
+if __name__ == "__main__":
+    sess = tf.InteractiveSession()
+    input_layer, readout, hidden_fully_connected_1 = createNetwork()
+    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 10)
 
