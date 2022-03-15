@@ -116,7 +116,7 @@ class Fireball(pg.sprite.Sprite):
 
 
     def draw(self, screen):
-        print("sheesh")
+        # print("sheesh")
         # self.hitbox = (self.x + 10, self.y + 10, 28, 10)  # defines the hitbox
         # pg.draw.rect(screen, (255, 0, 0), self.hitbox, 2)
         screen.blit(self.image, (self.x, self.y)) # not sure why this is so choppy lol
@@ -189,6 +189,7 @@ class GameState:
 
     # one hot vectors?
     def frame_step(self, action):
+        action = np.argmax(action)
         # dt = clock.tick(120)
         # clock.tick(60)
 
@@ -256,8 +257,8 @@ class GameState:
         return image_data, 1, terminal, self.score
 
     def reset(self):
-        pg.init()
-        screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+        # pg.init()
+        # screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
         pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
 
         # Fill background
@@ -267,4 +268,5 @@ class GameState:
         self.score = 0
         self.player = Player()
         self.allsprites = pg.sprite.RenderPlain((self.player))
-        self.obstacles = []git
+        self.obstacles = []
+        print("woo")

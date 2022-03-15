@@ -40,7 +40,7 @@ if __name__ == '__main__':
         action = np.random.randint(0, 9)
         # dqn = DQNAgent(game, params)
         # dqn.train(1000)
-        frame, reward, term, _ = game.step(action)
+        frame, reward, term, _ = game.frame_step(action)
         score += reward
         if term: break
 

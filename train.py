@@ -1,7 +1,7 @@
 from pipeline import GameState
 
 #!/usr/bin/env python
-from __future__ import print_function
+#from __future__ import print_function
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 import cv2
@@ -10,7 +10,9 @@ import random
 import numpy as np
 from collections import deque
 
+
 # seed 1001 was the maximal performance seed.
+testing = False
 seed = 1001
 np.random.seed(seed)
 random.seed(seed)
@@ -20,7 +22,7 @@ tf.compat.v1.set_random_seed(seed)
 drive = False
 google_drive_colab_path = '/content/drive/My Drive/flappy/' if drive == True else ''
 
-OBSERVE = 10000 # timestpes to init the replay memory.
+OBSERVE = 1000 # timestpes to init the replay memory.
 EXPLORE = 1000000 # frames over which to decay epsilon
 
 FINAL_EPSILON = 0.0001 # final value
@@ -193,6 +195,7 @@ def trainNetwork(s, readout, _, sess):
             # popping when above the memory.
             if len(D) > REPLAY_MEMORY:
                 D.popleft()
+                break
 
             # only train if done observing (We've sufficiently filled the replay memory)
             if t > OBSERVE:
@@ -261,10 +264,12 @@ def trainNetwork(s, readout, _, sess):
                 f.close()
             score = []
             flaps = []
+            game_state = GameState()
 
         if terminal == False and testing == False:
             string = "TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(sum(score)) +  ", Average Reward: " + str(np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score)) + ", Flaps: " + str(max(flaps)) +  ", Average Flaps: " + str(np.mean(net_flaps)) + ", Standard Deviation Of Flaps: " + str(np.std(net_flaps))
             print(string)
+
 
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
