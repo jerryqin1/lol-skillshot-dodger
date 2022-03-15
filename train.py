@@ -227,6 +227,7 @@ def trainNetwork(s, readout, _, sess):
                     a : a_batch,
                     s : s_j_batch}
                 )
+                print('testtesteststestsetest')
 
         # update the old values
         s_t = s_t1
@@ -234,8 +235,8 @@ def trainNetwork(s, readout, _, sess):
 
         if testing == False:
             # save progress every 10000 iterations
-            if t % 10000 == 0:
-                saver.save(sess, google_drive_colab_path + 'saved_networks_v1/' + GAME + '-dqn', global_step = t)
+            # if t % 10000 == 0:
+            #     saver.save(sess, google_drive_colab_path + 'saved_networks_v1/' + GAME + '-dqn', global_step = t)
 
             # print info
             state = ""
@@ -247,26 +248,28 @@ def trainNetwork(s, readout, _, sess):
         if terminal:
             net_score.append(sum(score))
             net_flaps.append(max(flaps))
+            game_state.reset()
+            # game_state = GameState()
 
-        if terminal and testing:
-            counter = counter + 1
-            print("TIMESTEP,", t, "Reward,", sum(score), "Average Reward,", np.mean(net_score), "Flaps,", max(flaps))
-            score = []
-            flaps = []
+        # if terminal and testing:
+        #     counter = counter + 1
+        #     print("TIMESTEP,", t, "Reward,", sum(score), "Average Reward,", np.mean(net_score), "Flaps,", max(flaps))
+        #     score = []
+        #     flaps = []
 
-        if terminal and testing == False:
-            string = "GameOver TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(sum(score)) +  ", Average Reward: " + str(np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score))
-            print(string)
-            print("Game Over")
-            with open(google_drive_colab_path + "net_score_cache_v1_game_over.txt", 'a') as f:
-                f.write(string + "\n")
-                f.close()
-            score = []
-            flaps = []
-            sleep(0.01)
-            if t > OBSERVE:
-                sleep(5)
-            game_state = GameState()
+        # if terminal and testing == False:
+        #     string = "GameOver TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(sum(score)) +  ", Average Reward: " + str(np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score))
+        #     print(string)
+        #     print("Game Over")
+        #     with open(google_drive_colab_path + "net_score_cache_v1_game_over.txt", 'a') as f:
+        #         f.write(string + "\n")
+        #         f.close()
+        #     score = []
+        #     flaps = []
+        #     # sleep(0.01)
+        #     # if t > OBSERVE:
+        #         # sleep(5)
+
 
         if terminal == False and testing == False:
             string = "TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(sum(score)) +  ", Average Reward: " + str(np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score))

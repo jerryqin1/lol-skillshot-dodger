@@ -7,17 +7,7 @@ import numpy as np
 import os
 import pygame as pg
 from pygame.locals import *
-### Todo: reset() for dqn
 
-WIN_WIDTH = 768
-WIN_HEIGHT = 512
-BUMP_DIST = 3
-FPS = 60
-clock = pg.time.Clock()
-
-main_dir = os.path.split(os.path.abspath(__file__))[0]
-data_dir = os.path.join(main_dir, "resources")
-directions = ['N', 'E', 'W', 'S', 'NW', 'NE', 'SW', 'SE']
 
 def check_bump(x_pos, y_pos, sprite_width, sprite_height):
     if x_pos <= 0:
@@ -31,6 +21,7 @@ def check_bump(x_pos, y_pos, sprite_width, sprite_height):
         y_pos = WIN_HEIGHT - BUMP_DIST - sprite_height
 
     return x_pos, y_pos
+
 
 def load_image(name, colorkey=None, scale=1):
     fullname = os.path.join(data_dir, name)
@@ -47,6 +38,7 @@ def load_image(name, colorkey=None, scale=1):
             colorkey = image.get_at((0, 0))
         image.set_colorkey(colorkey, pg.RLEACCEL)
     return image, image.get_rect()
+
 
 class Fireball(pg.sprite.Sprite):
     def __init__(self):
@@ -121,6 +113,7 @@ class Fireball(pg.sprite.Sprite):
         # pg.draw.rect(screen, (255, 0, 0), self.hitbox, 2)
         screen.blit(self.image, (self.x, self.y)) # not sure why this is so choppy lol
 
+
 class Player(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
@@ -154,40 +147,47 @@ class Player(pg.sprite.Sprite):
         #     self.rect.move_ip(15, 25)
 
 
-### TODO:
-###      1. code refactoring: create wrapper for main() (hold it in a Game class) and allow for environemnt reset and runthrough
-###      2. fine tune collision parameters / hitboxes
-###      3.
-
 pg.init()
+
+WIN_WIDTH = 768
+WIN_HEIGHT = 512
+BUMP_DIST = 3
+FPS = 60
+
+ACTION_MAP = {
+    0 : (0, 0),
+    1 : (0, 1),
+    2 : (1, 1),
+    3 : (1, 0),
+    4 : (1, -1),
+    5 : (0, -1),
+    6 : (-1, -1),
+    7 : (-1, 0),
+    8: (-1, 1),
+}
+
 screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+clock = pg.time.Clock()
+
+main_dir = os.path.split(os.path.abspath(__file__))[0]
+data_dir = os.path.join(main_dir, "resources")
+
 
 # Fill background
 background = pg.image.load("resources/background.jpg")
 background = pg.transform.scale(background, screen.get_size())
 background = background.convert()
 
+
 class GameState:
     def __init__(self):
-        pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
         self.player = Player()
         self.allsprites = pg.sprite.RenderPlain((self.player))
         self.score = 0
-        self.state_space = WIN_HEIGHT * WIN_WIDTH
         self.obstacles = []
-        self.ACTION_MAP = {
-            0 : (0, 0),
-            1 : (0, 1),
-            2 : (1, 1),
-            3 : (1, 0),
-            4 : (1, -1),
-            5 : (0, -1),
-            6 : (-1, -1),
-            7 : (-1, 0),
-            8: (-1, 1),
-        }
 
-    # one hot vectors?
+        pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200)) # determines how often we generate a fireball
+
     def frame_step(self, action):
         action = np.argmax(action)
         # dt = clock.tick(120)
@@ -220,6 +220,7 @@ class GameState:
                 print("I got hit")
                 print("Final score:", self.score)
                 terminal = True
+                self.__init__()
                 break
 
         # TODO - obs gen
@@ -228,7 +229,7 @@ class GameState:
             if event.type == USEREVENT+2:
                 self.obstacles.append(Fireball())
 
-        key_direction = self.ACTION_MAP[action]
+        key_direction = ACTION_MAP[action]
 
         x, y = self.player.rect.topleft
         x, y = check_bump(x + key_direction[0], y + key_direction[1], 40, 32)
