@@ -8,6 +8,7 @@ import os
 import pygame as pg
 from pygame.locals import *
 
+simple = True
 
 def check_bump(x_pos, y_pos, sprite_width, sprite_height):
     if x_pos <= 0:
@@ -52,7 +53,11 @@ class Fireball(pg.sprite.Sprite):
             self.x = np.random.choice([0, WIN_WIDTH])
             self.y = np.random.randint(0, WIN_HEIGHT)
         self.rotateCount = 0
-        self.image, self.rect = load_image("fireball4.png", scale=0.044)
+        # self.image, self.rect = load_image("fireball4.png", scale=0.044)
+        if not simple:
+            self.image, self.rect = load_image("fireball4.png", scale=0.044)
+        else:
+            self.image, self.rect = load_image("simple_red1.png", scale=0.032)
         self.direction = self.getDirection()
         self.x_vel, self.y_vel = self.getVel()
 
@@ -118,7 +123,11 @@ class Player(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
         # self.image, self.rect = load_image("player-sprite.gif", scale=0.15)
-        self.image, self.rect = load_image("poro_icon.png", scale=1.7)
+        # self.image, self.rect = load_image("poro_icon.png", scale=1.7)
+        if not simple:
+            self.image, self.rect = load_image("poro_icon.png", scale=1.7)
+        else:
+            self.image, self.rect = load_image("simple_green.png", scale=0.028)
         self.rect.topleft = (WIN_WIDTH / 2, WIN_HEIGHT / 2)
 
     def move_down(self):
@@ -174,7 +183,12 @@ data_dir = os.path.join(main_dir, "resources")
 
 
 # Fill background
-background = pg.image.load("resources/background.jpg")
+if not simple:
+    background = pg.image.load("resources/background.jpg")
+else:
+    background = pg.image.load("resources/white_color.png")
+
+# background = pg.image.load("resources/background.jpg")
 background = pg.transform.scale(background, screen.get_size())
 background = background.convert()
 

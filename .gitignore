@@ -1,3 +1,5 @@
 venv
 .idea
 __pycache__/
+net_score_cache_v1_game_over.txt
+saved_networks_v1/
