@@ -1,5 +1,38 @@
 from pipeline import GameState
-import tensorflow as tf
+
+#!/usr/bin/env python
+from __future__ import print_function
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+import cv2
+import sys
+import random
+import numpy as np
+from collections import deque
+
+# seed 1001 was the maximal performance seed.
+seed = 1001
+np.random.seed(seed)
+random.seed(seed)
+tf.compat.v1.set_random_seed(seed)
+
+# if you are running this on Google Colab (e.g., using Google Drive), enable to True.
+drive = False
+google_drive_colab_path = '/content/drive/My Drive/flappy/' if drive == True else ''
+
+OBSERVE = 10000 # timestpes to init the replay memory.
+EXPLORE = 1000000 # frames over which to decay epsilon
+
+FINAL_EPSILON = 0.0001 # final value
+INITIAL_EPSILON = 0.4 # starting value
+
+REPLAY_MEMORY = 50000 # number of previous transitions to remember
+BATCH = 32 # size of minibatch
+FRAME_PER_ACTION = 1
+
+GAME = 'skillshotdodger' # the name of the game being played for log files
+ACTIONS = 9 # number of valid actions
+GAMMA = 0.99 # decay rate of past observations
 
 
 def weight_variable(shape):
