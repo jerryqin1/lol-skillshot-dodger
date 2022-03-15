@@ -187,7 +187,8 @@ class GameState:
             8: (-1, 1),
         }
 
-    def step(self, action):
+    # one hot vectors?
+    def frame_step(self, action):
         # dt = clock.tick(120)
         # clock.tick(60)
 
