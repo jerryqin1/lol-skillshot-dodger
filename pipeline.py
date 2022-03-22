@@ -205,6 +205,7 @@ class GameState:
             self.mintime *= 0.95
             self.maxtime *= 0.95
             pg.time.set_timer(USEREVENT + 2, random.randrange(int(self.mintime), int(self.maxtime)))
+            ### Todo: maybe increase obstacle speed too?
 
 
         action = np.argmax(action)
