@@ -117,7 +117,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     do_nothing[0] = 1
 
     # preprocess the image to 80x80x4 and get the image state.
-    x_t, _, terminal, _ = game_state.frame_step(do_nothing)
+    x_t, _, terminal, _ = game_state.frame_step(do_nothing, 0)
     x_t = cv2.cvtColor(cv2.resize(x_t, (80, 80)), cv2.COLOR_BGR2GRAY)
     ret, x_t = cv2.threshold(x_t, 1, 255, cv2.THRESH_BINARY)
     s_t = np.stack((x_t, x_t, x_t, x_t), axis=2)
@@ -140,6 +140,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     epsilon = INITIAL_EPSILON
     episode = 0
     t = 0
+    t_marginal = 0
     score = []
     net_score = []
     net_flaps = []
@@ -148,6 +149,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     # we continue to execute forever, until the game ends.
     while episode < episodes:
         # print("STARTING EPISODE: ", episode + 1)
+        t_marginal = 0
 
         # get all the actions from the network
         readout_t = readout.eval(feed_dict={s: [s_t]})[0]
@@ -184,7 +186,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
             epsilon -= (INITIAL_EPSILON - FINAL_EPSILON) / EXPLORE
 
         # run the selected action and observe next state and reward
-        x_t1_colored, r_t, terminal, cur_score = game_state.frame_step(a_t)
+        x_t1_colored, r_t, terminal, cur_score = game_state.frame_step(a_t, t_marginal)
         flaps.append(cur_score)
 
         # process the image to 80x80x4 to preparer to feed into the network.
@@ -238,6 +240,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
         # update the old values
         s_t = s_t1
         t += 1
+        t_marginal += 1
 
         if not testing:
             # save progress every 10000 iterations
@@ -286,4 +289,4 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
     input_layer, readout, hidden_fully_connected_1 = createNetwork()
-    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 1000)
+    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 20000)

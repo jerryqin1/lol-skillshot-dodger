@@ -61,6 +61,7 @@ class Fireball(pg.sprite.Sprite):
         else:
             self.image, self.rect = load_image("simple_red1.png", scale=0.032)
         self.direction = self.getDirection()
+        self.speed = 14
         self.x_vel, self.y_vel = self.getVel()
 
     def getVel(self):
@@ -68,9 +69,9 @@ class Fireball(pg.sprite.Sprite):
         x_vel = 0
         y_vel = 0
 
-        MAX_SPD = 14
-        MID_SPD = 7
-        MIN_SPD = 1
+        MAX_SPD = self.speed
+        MID_SPD = self.speed / 2
+        MIN_SPD = 0
 
         if self.direction[0] == 'N':
             y_vel = -np.random.randint(MIN_SPD, MAX_SPD)
@@ -81,11 +82,14 @@ class Fireball(pg.sprite.Sprite):
         else:
             x_vel = np.random.randint(MIN_SPD, MAX_SPD)
 
+        # make everything the same speed indifferent of direction
         if n == 2:
-            if y_vel < 7:
-                x_vel = -np.random.randint(MAX_SPD - 2, MAX_SPD) if self.direction[1] == 'W' else np.random.randint(MAX_SPD - 2, MAX_SPD)
-            else:
-                x_vel = -np.random.randint(MIN_SPD, MID_SPD) if self.direction[1] == 'W' else np.random.randint(MIN_SPD, MID_SPD)
+            x_speed = int(math.sqrt(self.speed**2 - y_vel**2))
+            x_vel = -x_speed if self.direction[1] == 'W' else x_speed
+        elif y_vel == 0:
+            x_vel = -MAX_SPD if self.direction[1] == 'W' else MAX_SPD
+        elif x_vel == 0:
+            y_vel = -MAX_SPD if self.direction[1] == 'N' else MAX_SPD
 
         return x_vel, y_vel
 
@@ -130,6 +134,7 @@ class Player(pg.sprite.Sprite):
             self.image, self.rect = load_image("poro_icon.png", scale=1.7)
         else:
             self.image, self.rect = load_image("simple_green.png", scale=0.028)
+        self.speed = 10
         self.rect.topleft = (WIN_WIDTH / 2, WIN_HEIGHT / 2)
 
     def move_down(self):
@@ -188,11 +193,20 @@ class GameState:
         self.player = Player()
         self.allsprites = pg.sprite.RenderPlain((self.player))
         self.score = 0
+        self.vel = 9
         self.obstacles = []
+        self.mintime = 150
+        self.maxtime = 200
+        pg.time.set_timer(USEREVENT + 2, random.randrange(self.mintime, self.maxtime)) # determines how often we generate a fireball
 
-        pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200)) # determines how often we generate a fireball
+    def frame_step(self, action, time):
 
-    def frame_step(self, action):
+        if time % 150 == 0 and time != 0:
+            self.mintime *= 0.95
+            self.maxtime *= 0.95
+            pg.time.set_timer(USEREVENT + 2, random.randrange(int(self.mintime), int(self.maxtime)))
+
+
         action = np.argmax(action)
         # dt = clock.tick(120)
         # clock.tick(60)
@@ -224,16 +238,16 @@ class GameState:
                 print("I got hit")
                 print("Final score:", self.score)
                 terminal = True
-                self.__init__()
+                self.reset()
                 break
 
         # TODO - obs gen
         for event in pg.event.get():
             # generate a new fireball
-            if event.type == USEREVENT+2:
+            if event.type == USEREVENT + 2:
                 self.obstacles.append(Fireball())
 
-        key_direction = ACTION_MAP[action]
+        key_direction = self.get_vel(ACTION_MAP[action])
 
         x, y = self.player.rect.topleft
         # TODO - change hardcode
@@ -262,9 +276,21 @@ class GameState:
         clock.tick(FPS)
         return image_data, 1, terminal, self.score
 
+    def get_vel(self, key_direction):
+        if key_direction[0] != 0 and key_direction[1] != 0:
+            return (key_direction[0] * int(math.sqrt(self.player.speed) / 2), key_direction[1] * int(math.sqrt(self.player.speed) / 2))
+            # key_direction[0] *= int(math.sqrt(self.player.speed) / 2)
+            # key_direction[1] *= int(math.sqrt(self.player.speed) / 2)
+        else:
+            return (key_direction[0] * self.player.speed, key_direction[1] * self.player.speed)
+            # key_direction[0] *= self.player.speed
+            # key_direction[1] *= self.player.speed
+        # return key_direction
+
     def reset(self):
         # pg.init()
         # screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+        self.obstacles = []
         pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
 
         # Fill background
@@ -274,5 +300,4 @@ class GameState:
         self.score = 0
         self.player = Player()
         self.allsprites = pg.sprite.RenderPlain((self.player))
-        self.obstacles = []
-        print("woo")
+        print("Reseting game")
