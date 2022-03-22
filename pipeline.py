@@ -45,7 +45,7 @@ def load_image(name, colorkey=None, scale=1):
 
 class Fireball(pg.sprite.Sprite):
     def __init__(self):
-        # generate random location for the fireball on edge of screen
+        # generate random location for the fireball on edge of self.screen
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
         i = np.random.choice([0, 1])
         if i % 2 == 0:
@@ -116,12 +116,10 @@ class Fireball(pg.sprite.Sprite):
             else:
                 return 'NW'
 
-
-
     def draw(self, screen):
         # print("sheesh")
         # self.hitbox = (self.x + 10, self.y + 10, 28, 10)  # defines the hitbox
-        # pg.draw.rect(screen, (255, 0, 0), self.hitbox, 2)
+        # pg.draw.rect(self.screen, (255, 0, 0), self.hitbox, 2)
         screen.blit(self.image, (self.x, self.y)) # not sure why this is so choppy lol
 
 
@@ -136,6 +134,18 @@ class Player(pg.sprite.Sprite):
             self.image, self.rect = load_image("simple_green.png", scale=0.028)
         self.speed = 10
         self.rect.topleft = (WIN_WIDTH / 2, WIN_HEIGHT / 2)
+
+        self.ACTION_MAP = {
+            0: (0, 0),
+            1: (0, 1),
+            2: (1, 1),
+            3: (1, 0),
+            4: (1, -1),
+            5: (0, -1),
+            6: (-1, -1),
+            7: (-1, 0),
+            8: (-1, 1),
+        }
 
     def move_down(self):
         x, y = self.rect.topleft
@@ -154,42 +164,46 @@ class Player(pg.sprite.Sprite):
         self.rect.topleft = (x-1, y)
 
 
-pg.init()
 
 WIN_WIDTH = 768
 WIN_HEIGHT = 512
 BUMP_DIST = 3
 FPS = 60
 
-ACTION_MAP = {
-    0 : (0, 0),
-    1 : (0, 1),
-    2 : (1, 1),
-    3 : (1, 0),
-    4 : (1, -1),
-    5 : (0, -1),
-    6 : (-1, -1),
-    7 : (-1, 0),
-    8: (-1, 1),
-}
-
-screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
-clock = pg.time.Clock()
+# ACTION_MAP = {
+#     0 : (0, 0),
+#     1 : (0, 1),
+#     2 : (1, 1),
+#     3 : (1, 0),
+#     4 : (1, -1),
+#     5 : (0, -1),
+#     6 : (-1, -1),
+#     7 : (-1, 0),
+#     8: (-1, 1),
+# }
 
 
 # Fill background
-if not simple:
-    background = pg.image.load("resources/background.jpg")
-else:
-    background = pg.image.load("resources/white_color.png")
+# if not simple:
+#     background = pg.image.load("resources/background.jpg")
+# else:
+#     background = pg.image.load("resources/white_color.png")
 
 # background = pg.image.load("resources/background.jpg")
-background = pg.transform.scale(background, screen.get_size())
-background = background.convert()
+# background = pg.transform.scale(background, self.screen.get_size())
+# background = background.convert()
 
 
 class GameState:
     def __init__(self):
+        pg.init()
+        self.screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+        self.clock = pg.time.Clock()
+        self.background = pg.image.load("resources/background.jpg") if not simple else pg.image.load("resources/white_color.png")
+        self.background = pg.transform.scale(self.background, self.screen.get_size())
+        self.background = self.background.convert()
+
+
         self.player = Player()
         self.allsprites = pg.sprite.RenderPlain((self.player))
         self.score = 0
@@ -209,8 +223,8 @@ class GameState:
 
 
         action = np.argmax(action)
-        # dt = clock.tick(120)
-        # clock.tick(60)
+        # dt = self.clock.tick(120)
+        # self.clock.tick(60)
 
         terminal = False
 
@@ -248,7 +262,7 @@ class GameState:
             if event.type == USEREVENT + 2:
                 self.obstacles.append(Fireball())
 
-        key_direction = self.get_vel(ACTION_MAP[action])
+        key_direction = self.get_vel(self.player.ACTION_MAP[action])
 
         x, y = self.player.rect.topleft
         # TODO - change hardcode
@@ -260,21 +274,21 @@ class GameState:
             obstacle.update()
 
         # scoretext = font.render("Score: " + str(score), True, (255, 255, 255), (0, 0, 0))
-        # screen.blit(scoretext, (5, 5))
+        # self.screen.blit(scoretext, (5, 5))
 
         # Draw Everything
         pg.display.update()
-        screen.blit(background, (0, 0))
-        self.allsprites.draw(screen)
+        self.screen.blit(self.background, (0, 0))
+        self.allsprites.draw(self.screen)
 
         for obstacle in self.obstacles:
-            if obstacle.x <= -20 or obstacle.y <= -20 or obstacle.x >= WIN_WIDTH + 20 or obstacle.y >= WIN_HEIGHT + 20:
+            if obstacle.x <= -1 or obstacle.y <= -1 or obstacle.x >= WIN_WIDTH + 1  or obstacle.y >= WIN_HEIGHT + 1:
                 self.obstacles.pop(self.obstacles.index(obstacle))
             else:
-                obstacle.draw(screen)
+                obstacle.draw(self.screen)
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
-        clock.tick(FPS)
+        self.clock.tick(FPS)
         return image_data, 1, terminal, self.score
 
     def get_vel(self, key_direction):
@@ -290,14 +304,14 @@ class GameState:
 
     def reset(self):
         # pg.init()
-        # screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+        # self.screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
         self.obstacles = []
         pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
 
         # Fill background
-        background = pg.image.load("resources/background.jpg")
-        background = pg.transform.scale(background, screen.get_size())
-        background = background.convert()
+        self.background = pg.image.load("resources/background.jpg") if not simple else pg.image.load("resources/white_color.png")
+        self.background = pg.transform.scale(self.background, self.screen.get_size())
+        self.background = self.background.convert()
         self.score = 0
         self.player = Player()
         self.allsprites = pg.sprite.RenderPlain((self.player))

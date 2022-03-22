@@ -80,7 +80,7 @@ def main():
     while True:
         # dt = clock.tick(120)
         clock.tick(60)
-        score += 1
+        score += (2 / 3)
 
         player_c_x, player_c_y = player.rect.topleft
         player_c_x += player.rect.width / 2
@@ -132,7 +132,7 @@ def main():
             x, y = check_bump(x + key_direction[0], y + key_direction[1], 40, 32)
             player.rect.topleft = (x, y)
 
-            print(key_direction)
+            # print(key_direction)
 
         allsprites.update()
         for obstacle in obstacles:
@@ -177,6 +177,7 @@ class Fireball(pg.sprite.Sprite):
         # generate random location for the fireball on edge of screen
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
         i = np.random.choice([0, 1])
+        self.speed = 14
         if i % 2 == 0:
             self.x = np.random.randint(0, WIN_WIDTH)
             self.y = np.random.choice([0, WIN_HEIGHT])
@@ -196,9 +197,10 @@ class Fireball(pg.sprite.Sprite):
         x_vel = 0
         y_vel = 0
 
-        MAX_SPD = 5
-        MID_SPD = 2
-        MIN_SPD = 1
+        MAX_SPD = self.speed
+        MID_SPD = self.speed / 2
+        MIN_SPD = 0
+
         if self.direction[0] == 'N':
             y_vel = -np.random.randint(MIN_SPD, MAX_SPD)
         elif self.direction[0] == 'S':
@@ -208,13 +210,14 @@ class Fireball(pg.sprite.Sprite):
         else:
             x_vel = np.random.randint(MIN_SPD, MAX_SPD)
 
+        # make everything the same speed indifferent of direction
         if n == 2:
-            if y_vel < 7:
-                x_vel = -np.random.randint(MAX_SPD - 2, MAX_SPD) if self.direction[1] == 'W' else np.random.randint(
-                    MAX_SPD - 2, MAX_SPD)
-            else:
-                x_vel = -np.random.randint(MIN_SPD, MID_SPD) if self.direction[1] == 'W' else np.random.randint(MIN_SPD,
-                                                                                                                MID_SPD)
+            x_speed = int(math.sqrt(self.speed**2 - y_vel**2))
+            x_vel = -x_speed if self.direction[1] == 'W' else x_speed
+        elif y_vel == 0:
+            x_vel = -MAX_SPD if self.direction[1] == 'W' else MAX_SPD
+        elif x_vel == 0:
+            y_vel = -MAX_SPD if self.direction[1] == 'N' else MAX_SPD
 
         return x_vel, y_vel
 
@@ -242,7 +245,7 @@ class Fireball(pg.sprite.Sprite):
                 return 'NW'
 
     def draw(self, screen):
-        print("sheesh")
+        # print("sheesh")
         # self.hitbox = (self.x + 10, self.y + 10, 28, 10)  # defines the hitbox
         # pg.draw.rect(screen, (255, 0, 0), self.hitbox, 2)
         screen.blit(self.image, (self.x, self.y))  # not sure why this is so choppy lol
