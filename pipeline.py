@@ -237,13 +237,13 @@ class GameState:
 
         for obstacle in self.obstacles:
             # move the obstacle
-            if obstacle.x <= -1 or obstacle.y <= -1 or obstacle.x >= WIN_WIDTH + 1  or obstacle.y >= WIN_HEIGHT + 1:
-                self.obstacles.pop(self.obstacles.index(obstacle))
-            else:
-                obstacle.draw(self.screen)
-
             obstacle.x += obstacle.x_vel
             obstacle.y += obstacle.y_vel
+
+            # if obstacle.x <= -1 or obstacle.y <= -1 or obstacle.x >= WIN_WIDTH + 1 or obstacle.y >= WIN_HEIGHT + 1:
+            #     self.obstacles.pop(self.obstacles.index(obstacle))
+            # else:
+            #     obstacle.draw(self.screen)
 
             fireball_radius = int (obstacle.rect.width / 2)
             obs_c_x = obstacle.x + fireball_radius
@@ -284,11 +284,11 @@ class GameState:
         self.screen.blit(self.background, (0, 0))
         self.allsprites.draw(self.screen)
 
-        # for obstacle in self.obstacles:
-        #     if obstacle.x <= -1 or obstacle.y <= -1 or obstacle.x >= WIN_WIDTH + 1  or obstacle.y >= WIN_HEIGHT + 1:
-        #         self.obstacles.pop(self.obstacles.index(obstacle))
-        #     else:
-        #         obstacle.draw(self.screen)
+        for obstacle in self.obstacles:
+            if obstacle.x <= -1 or obstacle.y <= -1 or obstacle.x >= WIN_WIDTH + 1  or obstacle.y >= WIN_HEIGHT + 1:
+                self.obstacles.pop(self.obstacles.index(obstacle))
+            else:
+                obstacle.draw(self.screen)
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
         self.clock.tick(FPS)

@@ -275,7 +275,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
             t_marginal = 0
             net_score.append(sum(score))
             net_flaps.append(max(flaps))
-            game_state.reset()
+            # game_state.reset()
             # game_state = GameState()
 
         if terminal and testing:
