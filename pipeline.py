@@ -202,8 +202,6 @@ class GameState:
         self.background = pg.image.load("resources/background.jpg") if not simple else pg.image.load("resources/white_color.png")
         self.background = pg.transform.scale(self.background, self.screen.get_size())
         self.background = self.background.convert()
-
-
         self.player = Player()
         self.allsprites = pg.sprite.RenderPlain((self.player))
         self.score = 0
@@ -216,8 +214,8 @@ class GameState:
     def frame_step(self, action, time):
 
         if time % 150 == 0 and time != 0:
-            self.mintime *= 0.95
-            self.maxtime *= 0.95
+            self.mintime *= 0.90
+            self.maxtime *= 0.90
             pg.time.set_timer(USEREVENT + 2, random.randrange(int(self.mintime), int(self.maxtime)))
             ### Todo: maybe increase obstacle speed too?
 
@@ -231,7 +229,7 @@ class GameState:
         pg.event.pump()
 
         # TODO - fix this
-        self.score += 1
+        self.score += (2 / 3)
 
         player_c_x, player_c_y = self.player.rect.topleft
         player_c_x += self.player.rect.width / 2
@@ -239,6 +237,11 @@ class GameState:
 
         for obstacle in self.obstacles:
             # move the obstacle
+            if obstacle.x <= -1 or obstacle.y <= -1 or obstacle.x >= WIN_WIDTH + 1  or obstacle.y >= WIN_HEIGHT + 1:
+                self.obstacles.pop(self.obstacles.index(obstacle))
+            else:
+                obstacle.draw(self.screen)
+
             obstacle.x += obstacle.x_vel
             obstacle.y += obstacle.y_vel
 
@@ -281,11 +284,11 @@ class GameState:
         self.screen.blit(self.background, (0, 0))
         self.allsprites.draw(self.screen)
 
-        for obstacle in self.obstacles:
-            if obstacle.x <= -1 or obstacle.y <= -1 or obstacle.x >= WIN_WIDTH + 1  or obstacle.y >= WIN_HEIGHT + 1:
-                self.obstacles.pop(self.obstacles.index(obstacle))
-            else:
-                obstacle.draw(self.screen)
+        # for obstacle in self.obstacles:
+        #     if obstacle.x <= -1 or obstacle.y <= -1 or obstacle.x >= WIN_WIDTH + 1  or obstacle.y >= WIN_HEIGHT + 1:
+        #         self.obstacles.pop(self.obstacles.index(obstacle))
+        #     else:
+        #         obstacle.draw(self.screen)
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
         self.clock.tick(FPS)

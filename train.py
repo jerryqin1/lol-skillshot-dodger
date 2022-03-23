@@ -8,6 +8,7 @@ import tensorflow.compat.v1 as tf
 
 tf.disable_v2_behavior()
 import cv2
+import csv
 import sys
 import random
 import numpy as np
@@ -125,12 +126,12 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     # saving and loading networks
     saver = tf.train.Saver()
     sess.run(tf.initialize_all_variables())
-    checkpoint = tf.train.get_checkpoint_state("saved_networks_v1")
+    checkpoint = tf.train.get_checkpoint_state("saved_networks")
 
     # are we testing or training? the decision is made here.
     if checkpoint and checkpoint.model_checkpoint_path:
         saver.restore(sess, checkpoint.model_checkpoint_path)
-        print("Successfully loaded:", checkpoint.model_checkpoint_path)
+        print("Successfully loaded weights:", checkpoint.model_checkpoint_path)
     else:
         print("Could not find old network weights")
 
@@ -148,8 +149,22 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
 
     # we continue to execute forever, until the game ends.
     while episode < episodes:
+        # list to keep track of the episodic rewards
+        # rewards[0] = reward
+        # rewards[1] = running average reward
+        # rewards[2] = running average reward over past 10 episodes
+        rewards = [[], [], []]
+
+        # put this whewever
+        # rewards[0].append(score)
+        # rewards[1].append(np.mean(rewards[0]))
+        # rewards[2].append(np.mean(rewards[0][-10:]))
+        #
+        # rewards[3].append(self.env.prev_total)
+        # rewards[4].append(np.mean(rewards[3]))
+        # rewards[5].append(np.mean(rewards[3][-10:]))
+
         # print("STARTING EPISODE: ", episode + 1)
-        t_marginal = 0
 
         # get all the actions from the network
         readout_t = readout.eval(feed_dict={s: [s_t]})[0]
@@ -255,6 +270,9 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
 
         if terminal:
             episode += 1
+            # append stuff to a list and write to csv
+            # score/reward, number of actions / score, 10 episode average
+            t_marginal = 0
             net_score.append(sum(score))
             net_flaps.append(max(flaps))
             game_state.reset()
@@ -285,6 +303,17 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
                 np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score))
             print(string)
 
+
+def saveTrainingData(dataFile, rewards):
+        columns = ["reward", "average reward", "10 episode average reward", 'score', 'average score', '10 episode average score']
+        data = zip(rewards[0], rewards[1], rewards[2], rewards[3], rewards[4], rewards[5])
+
+        with open('rewards/{}.csv'.format(dataFile), 'w', newline='') as csvfile:
+            write = csv.writer(csvfile)
+            write.writerow(columns)
+            write.writerows(data)
+
+        print('data saved successfully!')
 
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
