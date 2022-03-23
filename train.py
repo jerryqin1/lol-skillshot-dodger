@@ -15,8 +15,9 @@ import random
 import numpy as np
 from collections import deque
 
-# seed 1001 was the maximal performance seed.
-os.environ["SDL_VIDEODRIVER"] = "dummy"
+# uncomment for non-render mode
+# os.environ["SDL_VIDEODRIVER"] = "dummy"
+
 testing = False
 seed = 2
 np.random.seed(seed)
@@ -296,8 +297,10 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
             #     np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score))
             # print(string)
             pass
-
-    saveTrainingData('reward_val', rewards)
+    if not testing:
+        saveTrainingData('training_reward_val', rewards)
+    else:
+        saveTrainingData('testing_reward_val', rewards)
 
 
 def saveTrainingData(dataFile, rewards):

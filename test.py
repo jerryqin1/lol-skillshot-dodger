@@ -20,47 +20,28 @@ random.seed(seed)
 tf.compat.v1.set_random_seed(seed)
 
 # plots a single traning reward curve for a specific state space representation
-def plot_single_training_reward_curve(model):
-    df = pd.read_csv("../rewards/rewards_{}.csv".format(model))
-    df[['reward', 'average reward', '10 episode average reward']].plot()
+def plot_single_training_reward_curve():
+    df = pd.read_csv("rewards/training_reward_val.csv")
+    df[['reward', 'average reward', '100 episode average reward']].plot()
     plt.ylabel('reward')
     plt.xlabel('episode')
-    plt.title('{} reward training curve'.format(model))
+    plt.title('reward training curve')
     plt.legend()
-    plt.show()
-
-# plots a single traning score curve for a specific state space representation
-def plot_single_training_score_curve(model):
-    df = pd.read_csv("../rewards/rewards_{}.csv".format(model))
-    df[['score', 'average score', '10 episode average score']].plot()
-    plt.ylabel('score')
-    plt.xlabel('episode')
-    plt.title('{} score training curve'.format(model))
-    plt.legend()
-    plt.show()
-
-# plots the 10 episode testing scores of each state space representation
-def plot_testing_scores(test_results, episodes):
-    x = [i + 1 for i in range(episodes)]
-    for key in test_results:
-        plt.plot(x, test_results[key][1], label=key)
-        plt.ylabel('score')
-        plt.xlabel('episode')
-        plt.legend()
     plt.show()
 
 # plots the 10 episode testing rewards of each state space representation
-def plot_testing_rewards(test_results, episodes):
-    x = [i + 1 for i in range(episodes)]
-    for key in test_results:
-        plt.plot(x, test_results[key][0], label=key)
-        plt.ylabel('cumulative reward')
-        plt.xlabel('episode')
-        plt.legend()
+def plot_testing_rewards():
+    df = pd.read_csv("rewards/testing_reward_val.csv")
+    df[['reward', 'average reward', '100 episode average reward']].plot()
+    plt.ylabel('reward')
+    plt.xlabel('episode')
+    plt.title('reward testing curve')
+    plt.legend()
     plt.show()
 
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
     input_layer, readout, hidden_fully_connected_1 = createNetwork()
     train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 10)
+    plot_testing_rewards()
 
