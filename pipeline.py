@@ -213,10 +213,10 @@ class GameState:
 
     def frame_step(self, action, time):
 
-        if time % 150 == 0 and time != 0:
-            self.mintime *= 0.90
-            self.maxtime *= 0.90
-            pg.time.set_timer(USEREVENT + 2, random.randrange(int(self.mintime), int(self.maxtime)))
+        # if time % 150 == 0 and time != 0:
+        #     self.mintime *= 0.90
+        #     self.maxtime *= 0.90
+        #     pg.time.set_timer(USEREVENT + 2, random.randrange(int(self.mintime), int(self.maxtime)))
             ### Todo: maybe increase obstacle speed too?
 
 
