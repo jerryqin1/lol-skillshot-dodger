@@ -229,7 +229,7 @@ class GameState:
         pg.event.pump()
 
         # TODO - fix this
-        self.score += (2 / 3)
+        self.score += (10 / 6)
 
         player_c_x, player_c_y = self.player.rect.topleft
         player_c_x += self.player.rect.width / 2
@@ -292,7 +292,7 @@ class GameState:
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
         self.clock.tick(FPS)
-        return image_data, 1, terminal, self.score
+        return image_data, (10 / 6), terminal, self.score
 
     def get_vel(self, key_direction):
         if key_direction[0] != 0 and key_direction[1] != 0:

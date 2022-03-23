@@ -80,7 +80,7 @@ def main():
     while True:
         # dt = clock.tick(120)
         clock.tick(60)
-        score += (2 / 3)
+        score += (10 / 6)
 
         player_c_x, player_c_y = player.rect.topleft
         player_c_x += player.rect.width / 2

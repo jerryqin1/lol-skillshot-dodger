@@ -16,7 +16,7 @@ import numpy as np
 from collections import deque
 
 # seed 1001 was the maximal performance seed.
-os.environ["SDL_VIDEODRIVER"] = "dummy"
+# os.environ["SDL_VIDEODRIVER"] = "dummy"
 testing = False
 seed = 2
 np.random.seed(seed)
@@ -271,12 +271,13 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
             rewards[0].append(sum(score))
             rewards[1].append(np.mean(rewards[0]))
             rewards[2].append(np.mean(rewards[0][-100:]))
+            score = []
 
 
         if terminal and testing:
             counter = counter + 1
-            print("TIMESTEP,", t, "Reward,", sum(score), "Average Reward,", rewards[1][-1])
-            if episode != episodes - 1:
+            print("TIMESTEP,", t, "Reward,", rewards[0][-1], "Average Reward,", rewards[1][-1])
+            if episode < episodes:
                 print("STARTING EPSIODE", episode + 1)
 
 
@@ -285,7 +286,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
             print(string)
             print("Game Over")
 
-            if episode != episodes - 1:
+            if episode < episodes:
                 print("STARTING EPSIODE", episode + 1)
 
         if not terminal and not testing:
@@ -313,4 +314,4 @@ def saveTrainingData(dataFile, rewards):
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
     input_layer, readout, hidden_fully_connected_1 = createNetwork()
-    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 10000)
+    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 10)
