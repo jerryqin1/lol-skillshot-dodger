@@ -16,7 +16,7 @@ import numpy as np
 from collections import deque
 
 # seed 1001 was the maximal performance seed.
-# os.environ["SDL_VIDEODRIVER"] = "dummy"
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 testing = False
 seed = 2
 np.random.seed(seed)
@@ -314,4 +314,4 @@ def saveTrainingData(dataFile, rewards):
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
     input_layer, readout, hidden_fully_connected_1 = createNetwork()
-    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 10)
+    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 10000)
