@@ -43,5 +43,6 @@ if __name__ == "__main__":
     sess = tf.InteractiveSession()
     input_layer, readout, hidden_fully_connected_1 = createNetwork()
     train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 10)
+    plot_single_training_reward_curve()
     plot_testing_rewards()
 

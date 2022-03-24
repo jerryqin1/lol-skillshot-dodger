@@ -138,10 +138,10 @@ class Player(pg.sprite.Sprite):
         self.ACTION_MAP = {
             0: (0, 0),
             1: (0, 1),
-            2: (1, 1),
-            3: (1, 0),
-            4: (1, -1),
-            5: (0, -1),
+            2: (0, -1),
+            3: (1, 1),
+            4: (1, 0),
+            5: (1, -1),
             6: (-1, -1),
             7: (-1, 0),
             8: (-1, 1),
@@ -221,6 +221,7 @@ class GameState:
 
 
         action = np.argmax(action)
+        print("action", action)
         # dt = self.clock.tick(120)
         # self.clock.tick(60)
 
@@ -257,7 +258,9 @@ class GameState:
                 print("Final score:", self.score)
                 terminal = True
                 self.reset()
-                break
+                image_data = pg.surfarray.array3d(pg.display.get_surface())
+                return image_data, -100, terminal, self.score
+                # return
 
         # TODO - obs gen
         for event in pg.event.get():

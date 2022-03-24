@@ -1,5 +1,14 @@
 from time import sleep, time
 
+### Todo: 1. figure out why we're doing actions after dying before printing out episodic results
+###       2. look into frame processing and whether its deleting too much info
+###       3. reward function
+###       4. difficulty scaling
+###       5. stable baselines
+###       6. update game.py code so we can have human play
+###       7. training on normal background with ezreal sprite
+
+
 from pipeline import GameState
 
 # !/usr/bin/env python
@@ -19,16 +28,16 @@ from collections import deque
 # os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 testing = False
-seed = 2
-np.random.seed(seed)
-random.seed(seed)
-tf.compat.v1.set_random_seed(seed)
+# seed = 42
+# np.random.seed(seed)
+# random.seed(seed)
+# tf.compat.v1.set_random_seed(seed)
 
 # if you are running this on Google Colab (e.g., using Google Drive), enable to True.
 drive = False
 google_drive_colab_path = '/content/drive/My Drive/flappy/' if drive == True else ''
 
-OBSERVE = 1000  # timestpes to init the replay memory.
+OBSERVE = 10000  # timestpes to init the replay memory.
 EXPLORE = 1000000  # frames over which to decay epsilon
 
 FINAL_EPSILON = 0.0001  # final value
@@ -129,7 +138,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     # saving and loading networks
     saver = tf.train.Saver()
     sess.run(tf.initialize_all_variables())
-    checkpoint = tf.train.get_checkpoint_state("saved_networks_v1")
+    checkpoint = tf.train.get_checkpoint_state("saved_networks_v2")
 
     # are we testing or training? the decision is made here.
     if checkpoint and checkpoint.model_checkpoint_path:
@@ -146,8 +155,8 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     t = 0
     t_marginal = 0
     score = []
-    net_score = []
-    net_flaps = []
+    # net_score = []
+    # net_flaps = []
     flaps = []
 
     # list to keep track of the episodic rewards
@@ -181,14 +190,18 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
             # otherwise, we should select randomly at times. (Defined by epsilon)
             if t % FRAME_PER_ACTION == 0:
                 if random.random() <= epsilon:
-                    print("Random Action Selected Via Epsilon Greedy")
-                    action_index = random.randrange(ACTIONS)
-                    a_t[random.randrange(ACTIONS)] = 1
+                    print("Time Step {}: Random Action Selected Via Epsilon Greedy".format(t))
+                    # action_index = random.randrange(ACTIONS)
+                    action_index = random.randint(0, ACTIONS - 1)
+                    a_t[action_index] = 1
+                    print("action index", action_index)
                 else:
+                    print("not random action index", action_index)
                     action_index = np.argmax(readout_t)
                     a_t[action_index] = 1
             else:
                 a_t[0] = 1  # do nothing
+            # print("action index", action_index)
 
         # downscale the value of the epsilon.
         if epsilon > FINAL_EPSILON and t > OBSERVE:
@@ -254,7 +267,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
         if not testing:
             # save progress every 10000 iterations
             if t % 10000 == 0:
-                saver.save(sess, google_drive_colab_path + 'saved_networks_v1/' + GAME + '-dqn', global_step=t)
+                saver.save(sess, google_drive_colab_path + 'saved_networks_v2/' + GAME + '-dqn', global_step=t)
                 print("SAVED SUCCESSFULLY")
 
             if t <= OBSERVE:
