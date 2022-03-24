@@ -198,7 +198,7 @@ class GameState:
         self.maxtime = 200
         pg.time.set_timer(USEREVENT + 2, random.randrange(self.mintime, self.maxtime)) # determines how often we generate a fireball
 
-    def frame_step(self, action, time):
+    def frame_step(self, action):
 
         # if time % 150 == 0 and time != 0:
         #     self.mintime *= 0.90
@@ -206,9 +206,7 @@ class GameState:
         #     pg.time.set_timer(USEREVENT + 2, random.randrange(int(self.mintime), int(self.maxtime)))
             ### Todo: maybe increase obstacle speed too?
 
-
         action = np.argmax(action)
-        print("action", action)
         # dt = self.clock.tick(120)
         # self.clock.tick(60)
 

@@ -31,7 +31,6 @@ tf.compat.v1.set_random_seed(seed)
 
 # if you are running this on Google Colab (e.g., using Google Drive), enable to True.
 drive = False
-google_drive_colab_path = '/content/drive/My Drive/flappy/' if drive == True else ''
 
 OBSERVE = 5000  # timestpes to init the replay memory.
 EXPLORE = 1000000  # frames over which to decay epsilon
@@ -47,6 +46,7 @@ GAME = 'skillshotdodger'  # the name of the game being played for log files
 ACTIONS = 9  # number of valid actions
 GAMMA = 0.99  # decay rate of past observations
 
+FRAME_LIMIT = 20000
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.01)
@@ -126,7 +126,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     do_nothing[0] = 1
 
     # preprocess the image to 80x80x4 and get the image state.
-    x_t, _, terminal, _ = game_state.frame_step(do_nothing, 0)
+    x_t, _, terminal, _ = game_state.frame_step(do_nothing)
     x_t = cv2.cvtColor(cv2.resize(x_t, (80, 80)), cv2.COLOR_BGR2GRAY)
     ret, x_t = cv2.threshold(x_t, 1, 255, cv2.THRESH_BINARY)
     s_t = np.stack((x_t, x_t, x_t, x_t), axis=2)
@@ -163,6 +163,9 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     print("STARTING EPSIODE", 1)
     while episode < episodes:
 
+        if t > FRAME_LIMIT:
+            break
+
         # get all the actions from the network
         readout_t = readout.eval(feed_dict={s: [s_t]})[0]
 
@@ -175,34 +178,35 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
             if counter > 10:
                 print("Testing Done")
                 return
-            if t % FRAME_PER_ACTION == 0:
-                action_index = np.argmax(readout_t)
-                a_t[action_index] = 1
-            else:
-                a_t[0] = 1
+            action_index = np.argmax(readout_t)
+            a_t[action_index] = 1
+            # if t % FRAME_PER_ACTION == 0:
+            #     action_index = np.argmax(readout_t)
+            #     a_t[action_index] = 1
+            # else:
+            #     a_t[0] = 1
         else:
             # otherwise, we should select randomly at times. (Defined by epsilon)
-            if t % FRAME_PER_ACTION == 0:
-                if random.random() <= epsilon:
-                    print("Time Step {}: Random Action Selected Via Epsilon Greedy".format(t))
-                    # action_index = random.randrange(ACTIONS)
-                    action_index = random.randint(0, ACTIONS - 1)
-                    a_t[action_index] = 1
-                    print("action index", action_index)
-                else:
-                    print("not random action index", action_index)
-                    action_index = np.argmax(readout_t)
-                    a_t[action_index] = 1
+
+            if random.random() <= epsilon:
+                print("Time Step {}: Random Action Selected Via Epsilon Greedy".format(t))
+                action_index = random.randint(0, ACTIONS - 1)
+                a_t[action_index] = 1
             else:
-                a_t[0] = 1  # do nothing
-            # print("action index", action_index)
+                action_index = np.argmax(readout_t)
+                a_t[action_index] = 1
 
         # downscale the value of the epsilon.
         if epsilon > FINAL_EPSILON and t > OBSERVE:
             epsilon -= (INITIAL_EPSILON - FINAL_EPSILON) / EXPLORE
 
         # run the selected action and observe next state and reward
-        x_t1_colored, r_t, terminal, cur_score = game_state.frame_step(a_t, t_marginal)
+        r_t = 0
+        for i in range(4):
+            x_t1_colored, r_t_acc, terminal, cur_score = game_state.frame_step(a_t)
+            r_t += r_t_acc
+            if terminal:
+                break
 
         # process the image to 80x80x4 to preparer to feed into the network.
         x_t1 = cv2.cvtColor(cv2.resize(x_t1_colored, (80, 80)), cv2.COLOR_BGR2GRAY)
@@ -260,7 +264,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
         if not testing:
             # save progress every 10000 iterations
             if t % 10000 == 0:
-                saver.save(sess, google_drive_colab_path + 'saved_networks_v2/' + GAME + '-dqn', global_step=t)
+                saver.save(sess, 'saved_networks_v1/' + GAME + '-dqn', global_step=t)
                 print("SAVED SUCCESSFULLY")
 
             if t <= OBSERVE:
@@ -301,23 +305,26 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
             #     np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score))
             # print(string)
             pass
+
+    saver.save(sess, 'saved_networks_v1/' + GAME + '-dqn', global_step=t)
     if not testing:
         saveTrainingData('training_reward_val', rewards)
     else:
         saveTrainingData('testing_reward_val', rewards)
+    print("SAVED SUCCESSFULLY")
 
 def saveTrainingData(dataFile, rewards):
-        columns = ["reward", "average reward", "100 episode average reward"]
-        data = zip(rewards[0], rewards[1], rewards[2])
+    columns = ["reward", "average reward", "100 episode average reward"]
+    data = zip(rewards[0], rewards[1], rewards[2])
 
-        with open('rewards/{}.csv'.format(dataFile), 'w', newline='') as csvfile:
-            write = csv.writer(csvfile)
-            write.writerow(columns)
-            write.writerows(data)
+    with open('rewards/{}.csv'.format(dataFile), 'w', newline='') as csvfile:
+        write = csv.writer(csvfile)
+        write.writerow(columns)
+        write.writerows(data)
 
-        print('data saved successfully!')
+    print('data saved successfully!')
 
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
     input_layer, readout, hidden_fully_connected_1 = createNetwork()
-    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 10000)
+    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 500)
