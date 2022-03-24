@@ -46,7 +46,7 @@ GAME = 'skillshotdodger'  # the name of the game being played for log files
 ACTIONS = 9  # number of valid actions
 GAMMA = 0.99  # decay rate of past observations
 
-FRAME_LIMIT = 20000
+FRAME_LIMIT = 30000
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.01)
@@ -327,4 +327,4 @@ def saveTrainingData(dataFile, rewards):
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
     input_layer, readout, hidden_fully_connected_1 = createNetwork()
-    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 500)
+    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 1800)
