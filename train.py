@@ -28,10 +28,10 @@ from collections import deque
 # os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 testing = False
-# seed = 42
-# np.random.seed(seed)
-# random.seed(seed)
-# tf.compat.v1.set_random_seed(seed)
+seed = 42
+np.random.seed(seed)
+random.seed(seed)
+tf.compat.v1.set_random_seed(seed)
 
 # if you are running this on Google Colab (e.g., using Google Drive), enable to True.
 drive = False
@@ -287,13 +287,11 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
             rewards[2].append(np.mean(rewards[0][-100:]))
             score = []
 
-
         if terminal and testing:
             counter = counter + 1
             print("TIMESTEP,", t, "Reward,", rewards[0][-1], "Average Reward,", rewards[1][-1])
             if episode < episodes:
                 print("STARTING EPSIODE", episode + 1)
-
 
         if terminal and not testing:
             string = "TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(rewards[0][-1]) +  ", Average Reward: " + str(rewards[1][-1]) + ", 100 Episode Average Reward: " + str(rewards[2][-1]) +  ", Standard Deviation Of Score: " + str(np.std(rewards[0]))
@@ -314,7 +312,6 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
         saveTrainingData('training_reward_val', rewards)
     else:
         saveTrainingData('testing_reward_val', rewards)
-
 
 def saveTrainingData(dataFile, rewards):
         columns = ["reward", "average reward", "100 episode average reward"]

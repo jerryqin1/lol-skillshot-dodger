@@ -165,23 +165,10 @@ class Player(pg.sprite.Sprite):
 
 
 
-WIN_WIDTH = 768
+WIN_WIDTH = 512
 WIN_HEIGHT = 512
 BUMP_DIST = 3
 FPS = 60
-
-# ACTION_MAP = {
-#     0 : (0, 0),
-#     1 : (0, 1),
-#     2 : (1, 1),
-#     3 : (1, 0),
-#     4 : (1, -1),
-#     5 : (0, -1),
-#     6 : (-1, -1),
-#     7 : (-1, 0),
-#     8: (-1, 1),
-# }
-
 
 # Fill background
 # if not simple:
@@ -299,14 +286,9 @@ class GameState:
 
     def get_vel(self, key_direction):
         if key_direction[0] != 0 and key_direction[1] != 0:
-            return (key_direction[0] * int(math.sqrt(self.player.speed) / 2), key_direction[1] * int(math.sqrt(self.player.speed) / 2))
-            # key_direction[0] *= int(math.sqrt(self.player.speed) / 2)
-            # key_direction[1] *= int(math.sqrt(self.player.speed) / 2)
+            return key_direction[0] * int(math.sqrt(self.player.speed) / 2), key_direction[1] * int(math.sqrt(self.player.speed) / 2)
         else:
-            return (key_direction[0] * self.player.speed, key_direction[1] * self.player.speed)
-            # key_direction[0] *= self.player.speed
-            # key_direction[1] *= self.player.speed
-        # return key_direction
+            return key_direction[0] * self.player.speed, key_direction[1] * self.player.speed
 
     def reset(self):
         # pg.init()
