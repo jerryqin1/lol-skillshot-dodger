@@ -156,8 +156,6 @@ def main():
 
         obstacles = next_obstacles
 
-    print('Final score: ' + str(score))
-
 
 def load_image(name, colorkey=None, scale=1):
     fullname = os.path.join(data_dir, name)
