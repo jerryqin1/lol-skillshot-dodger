@@ -14,8 +14,6 @@ import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 import cv2
 import csv
-import sys
-import os
 import random
 import numpy as np
 from collections import deque
