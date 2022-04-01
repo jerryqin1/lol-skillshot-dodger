@@ -210,8 +210,6 @@ class GameState:
         # dt = self.clock.tick(120)
         # self.clock.tick(60)
 
-        terminal = False
-
         pg.event.pump()
 
         # TODO - fix this
@@ -241,11 +239,9 @@ class GameState:
             if distance < 32:
                 print("I got hit")
                 print("Final score:", self.score)
-                terminal = True
                 self.reset()
                 image_data = pg.surfarray.array3d(pg.display.get_surface())
-                return image_data, -100, terminal, self.score
-                # return
+                return image_data, -100, True, self.score
 
         # TODO - obs gen
         for event in pg.event.get():
@@ -280,7 +276,7 @@ class GameState:
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
         self.clock.tick(FPS)
-        return image_data, (10 / 6), terminal, self.score
+        return image_data, (10 / 6), False, self.score
 
     def get_vel(self, key_direction):
         if key_direction[0] != 0 and key_direction[1] != 0:

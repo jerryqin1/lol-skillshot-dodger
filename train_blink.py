@@ -101,7 +101,7 @@ def createNetwork():
 
 
 def train_test(s, readout, _, sess, testing=False, episodes=20000):
-    counter = 0
+    episode_counter = 0
     # define the cost function
     a = tf.placeholder("float", [None, ACTIONS])
     y = tf.placeholder("float", [None])
@@ -118,6 +118,9 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
 
     # store the previous observations in replay memory
     D = deque()
+
+    # no obstacles
+    # prints Game over, ,but not i got hit
 
     # get the first state by doing nothing and preprocess the image to 80x80x4
     do_nothing = np.zeros(ACTIONS)
@@ -175,7 +178,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
         # if we're testing we dont need to follow an epsilon greedy policy.
         # just get the highest action value.
         if testing:
-            if counter > 10:
+            if episode_counter > 10:
                 print("Testing Done")
                 print("Printing action distribution")
                 print(action_counts)
@@ -245,9 +248,9 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
                 readout_j1_batch = readout.eval(feed_dict={s: s_j1_batch})
 
                 for i in range(0, len(minibatch)):
-                    terminal = minibatch[i][4]
+                    ended = minibatch[i][4]
                     # if terminal, only equals reward
-                    if terminal:
+                    if ended:
                         y_batch.append(r_batch[i])
                     else:
                         y_batch.append(r_batch[i] + GAMMA * np.max(readout_j1_batch[i]))
@@ -287,27 +290,19 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
             rewards[2].append(np.mean(rewards[0][-100:]))
             score = []
 
-        if terminal and testing:
-            counter = counter + 1
-            print("TIMESTEP,", t, "Reward,", rewards[0][-1], "Average Reward,", rewards[1][-1])
-            if episode < episodes:
-                print("STARTING EPSIODE", episode + 1)
-
-        if terminal and not testing:
-            string = "TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(rewards[0][-1]) +  ", Average Reward: " + str(rewards[1][-1]) + ", 100 Episode Average Reward: " + str(rewards[2][-1]) +  ", Standard Deviation Of Score: " + str(np.std(rewards[0]))
-            print(string)
+            if testing:
+                episode_counter += 1
+                print("TIMESTEP,", t, "Reward,", rewards[0][-1], "Average Reward,", rewards[1][-1])
+            else:
+                string = "TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(readout_t) + ", Episode Reward: " + str(rewards[0][-1]) +  ", Average Reward: " + str(rewards[1][-1]) + ", 100 Episode Average Reward: " + str(rewards[2][-1])
+                # +  ", Standard Deviation Of Score: " + str(np.std(rewards[0]))
+                print(string)
+                
             print("Game Over")
-
             if episode < episodes:
                 print("STARTING EPSIODE", episode + 1)
 
-        if not terminal and not testing:
-            # string = "TIMESTEP: " + str(t) + ", STATE: " + str(state) + ", EPSILON: " + str(
-            #     epsilon) + ", ACTION: " + str(action_index) + ", REWARD: " + str(r_t) + ", Q_MAX: %e" % np.max(
-            #     readout_t) + ", Episode Reward: " + str(sum(score)) + ", Average Reward: " + str(
-            #     np.mean(net_score)) + ", Standard Deviation Of Score: " + str(np.std(net_score))
-            # print(string)
-            pass
+        
 
     saver.save(sess, 'saved_networks_v1/' + GAME + '-dqn', global_step=t)
     if not testing:
