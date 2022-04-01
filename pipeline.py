@@ -209,7 +209,6 @@ class GameState:
         action = np.argmax(action)
         # dt = self.clock.tick(120)
         # self.clock.tick(60)
-
         pg.event.pump()
 
         # TODO - fix this
@@ -288,12 +287,12 @@ class GameState:
         # pg.init()
         # self.screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
         self.obstacles = []
-        pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
+        # pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
 
         # Fill background
-        self.background = pg.image.load("resources/background.jpg") if not simple else pg.image.load("resources/white_color.png")
-        self.background = pg.transform.scale(self.background, self.screen.get_size())
-        self.background = self.background.convert()
+        # self.background = pg.image.load("resources/background.jpg") if not simple else pg.image.load("resources/white_color.png")
+        # self.background = pg.transform.scale(self.background, self.screen.get_size())
+        # self.background = self.background.convert()
         self.score = 0
         self.player = Player()
         self.allsprites = pg.sprite.RenderPlain((self.player))

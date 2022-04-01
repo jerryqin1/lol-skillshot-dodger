@@ -30,11 +30,11 @@ tf.compat.v1.set_random_seed(seed)
 # if you are running this on Google Colab (e.g., using Google Drive), enable to True.
 drive = False
 
-OBSERVE = 5000  # timestpes to init the replay memory.
+OBSERVE = 500  # timestpes to init the replay memory.
 EXPLORE = 1000000  # frames over which to decay epsilon
 
 FINAL_EPSILON = 0.0001  # final value
-INITIAL_EPSILON = 0.4  # starting value
+INITIAL_EPSILON = 0.45  # starting value
 
 REPLAY_MEMORY = 50000  # number of previous transitions to remember
 BATCH = 32  # size of minibatch
@@ -44,7 +44,7 @@ GAME = 'skillshotdodger'  # the name of the game being played for log files
 ACTIONS = 9  # number of valid actions
 GAMMA = 0.99  # decay rate of past observations
 
-FRAME_LIMIT = 30000
+FRAME_LIMIT = EXPLORE
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.01)
@@ -129,7 +129,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     # preprocess the image to 80x80x4 and get the image state.
     x_t, _, terminal, _ = game_state.frame_step(do_nothing)
     x_t = cv2.cvtColor(cv2.resize(x_t, (80, 80)), cv2.COLOR_BGR2GRAY)
-    ret, x_t = cv2.threshold(x_t, 1, 255, cv2.THRESH_BINARY)
+    # ret, x_t = cv2.threshold(x_t, 1, 255, cv2.THRESH_BINARY)
     s_t = np.stack((x_t, x_t, x_t, x_t), axis=2)
 
     # saving and loading networks
@@ -216,7 +216,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
 
         # process the image to 80x80x4 to preparer to feed into the network.
         x_t1 = cv2.cvtColor(cv2.resize(x_t1_colored, (80, 80)), cv2.COLOR_BGR2GRAY)
-        _, x_t1 = cv2.threshold(x_t1, 1, 255, cv2.THRESH_BINARY)
+        # _, x_t1 = cv2.threshold(x_t1, 1, 255, cv2.THRESH_BINARY)
         x_t1 = np.reshape(x_t1, (80, 80, 1))
         s_t1 = np.append(x_t1, s_t[:, :, :3], axis=2)
 
@@ -269,7 +269,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
 
         if not testing:
             # save progress every 10000 iterations
-            if t % 10000 == 0:
+            if t % 5000 == 0:
                 saver.save(sess, 'saved_networks_v1/' + GAME + '-dqn', global_step=t)
                 print("SAVED SUCCESSFULLY")
 
@@ -325,4 +325,4 @@ def saveTrainingData(dataFile, rewards):
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
     input_layer, readout, hidden_fully_connected_1 = createNetwork()
-    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 1800)
+    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 10000)
