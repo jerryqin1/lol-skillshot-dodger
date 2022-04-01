@@ -30,7 +30,7 @@ tf.compat.v1.set_random_seed(seed)
 # if you are running this on Google Colab (e.g., using Google Drive), enable to True.
 drive = False
 
-OBSERVE = 500  # timestpes to init the replay memory.
+OBSERVE = 1000  # timestpes to init the replay memory.
 EXPLORE = 1000000  # frames over which to decay epsilon
 
 FINAL_EPSILON = 0.0001  # final value
