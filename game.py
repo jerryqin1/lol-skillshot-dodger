@@ -146,11 +146,15 @@ def main():
         screen.blit(background, (0, 0))
         allsprites.draw(screen)
 
+        next_obstacles = []
         for obstacle in obstacles:
             if obstacle.x <= -20 or obstacle.y <= -20 or obstacle.x >= WIN_WIDTH + 20 or obstacle.y >= WIN_HEIGHT + 20:
-                obstacles.pop(obstacles.index(obstacle))
+                pass
             else:
+                next_obstacles.append(obstacle)
                 obstacle.draw(screen)
+
+        obstacles = next_obstacles
 
     print('Final score: ' + str(score))
 

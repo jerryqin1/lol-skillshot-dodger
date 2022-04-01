@@ -159,6 +159,8 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     # rewards[2] = running average reward over past 100 episodes
     rewards = [[], [], []]
 
+    action_counts = np.zeros([ACTIONS])
+
     # we continue to execute forever, until the game ends.
     print("STARTING EPSIODE", 1)
     while episode < episodes:
@@ -177,9 +179,12 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
         if testing:
             if counter > 10:
                 print("Testing Done")
+                print("Printing action distribution")
+                print(action_counts)
                 return
             action_index = np.argmax(readout_t)
             a_t[action_index] = 1
+            action_counts[action_index] += 1
             # if t % FRAME_PER_ACTION == 0:
             #     action_index = np.argmax(readout_t)
             #     a_t[action_index] = 1
