@@ -23,9 +23,9 @@ def check_bump(x_pos, y_pos, sprite_width, sprite_height):
 
     return x_pos, y_pos
 
-main_dir = os.path.split(os.path.abspath(__file__))[0]
-data_dir = os.path.join(main_dir, "resources")
-
+# main_dir = os.path.split(os.path.abspath(__file__))[0]
+# data_dir = os.path.join("resources")
+data_dir = 'resources'
 def load_image(name, colorkey=None, scale=1):
     fullname = os.path.join(data_dir, name)
     image = pg.image.load(fullname)
@@ -165,8 +165,8 @@ class Player(pg.sprite.Sprite):
 
 
 
-WIN_WIDTH = 512
-WIN_HEIGHT = 512
+WIN_WIDTH = 256
+WIN_HEIGHT = 256
 BUMP_DIST = 3
 FPS = 60
 

@@ -17,6 +17,7 @@ import csv
 import random
 import numpy as np
 from collections import deque
+import os
 
 # uncomment for non-render mode
 # os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -44,7 +45,7 @@ GAME = 'skillshotdodger'  # the name of the game being played for log files
 ACTIONS = 9  # number of valid actions
 GAMMA = 0.99  # decay rate of past observations
 
-FRAME_LIMIT = EXPLORE
+FRAME_LIMIT = 200000
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.01)
@@ -161,6 +162,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     rewards = [[], [], []]
 
     action_counts = np.zeros([ACTIONS])
+    action_history = np.zeros(ACTIONS)
 
     # we continue to execute forever, until the game ends.
     print("STARTING EPSIODE", 1)
@@ -178,7 +180,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
         # if we're testing we dont need to follow an epsilon greedy policy.
         # just get the highest action value.
         if testing:
-            if episode_counter > 10:
+            if episode_counter > 1000:
                 print("Testing Done")
                 print("Printing action distribution")
                 print(action_counts)
@@ -208,6 +210,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
 
         # run the selected action and observe next state and reward
         r_t = 0
+        x_t1_colored = 0
         for i in range(4):
             x_t1_colored, r_t_acc, terminal, cur_score = game_state.frame_step(a_t)
             r_t += r_t_acc
@@ -291,6 +294,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
             score = []
 
             if testing:
+                action_history[np.argmax(a_t)] += 1
                 episode_counter += 1
                 print("TIMESTEP,", t, "Reward,", rewards[0][-1], "Average Reward,", rewards[1][-1])
             else:
@@ -309,6 +313,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
         saveTrainingData('training_reward_val', rewards)
     else:
         saveTrainingData('testing_reward_val', rewards)
+        print(action_history)
     print("SAVED SUCCESSFULLY")
 
 def saveTrainingData(dataFile, rewards):

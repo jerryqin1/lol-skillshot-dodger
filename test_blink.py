@@ -10,15 +10,17 @@ import cv2
 import sys
 import random
 import numpy as np
+import os
 from collections import deque
 
 
 testing = True
-seed = 2
+seed = 3
 np.random.seed(seed)
 random.seed(seed)
 tf.compat.v1.set_random_seed(seed)
 
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 # plots a single traning reward curve for a specific state space representation
 def plot_single_training_reward_curve():
     df = pd.read_csv("rewards/training_reward_val.csv")
@@ -42,7 +44,7 @@ def plot_testing_rewards():
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
     input_layer, readout, hidden_fully_connected_1 = createNetwork()
-    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 10)
+    train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 1000000)
     plot_single_training_reward_curve()
     plot_testing_rewards()
 
