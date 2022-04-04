@@ -10,6 +10,7 @@ from pygame.locals import *
 
 simple = True
 
+
 def check_bump(x_pos, y_pos, sprite_width, sprite_height):
     if x_pos <= 0:
         x_pos = BUMP_DIST
@@ -23,10 +24,13 @@ def check_bump(x_pos, y_pos, sprite_width, sprite_height):
 
     return x_pos, y_pos
 
+
 # main_dir = os.path.split(os.path.abspath(__file__))[0]
 # data_dir = os.path.join("resources")
 data_dir = 'resources'
-def load_image(name, colorkey=None, scale=1):
+
+
+def load_image(name, colorkey=None, scale=1.0):
     fullname = os.path.join(data_dir, name)
     image = pg.image.load(fullname)
     image.set_colorkey((0,0,0))
@@ -55,11 +59,10 @@ class Fireball(pg.sprite.Sprite):
             self.x = np.random.choice([0, WIN_WIDTH])
             self.y = np.random.randint(0, WIN_HEIGHT)
         self.rotateCount = 0
-        # self.image, self.rect = load_image("fireball4.png", scale=0.044)
-        if not simple:
-            self.image, self.rect = load_image("fireball4.png", scale=0.044)
-        else:
+        if simple:
             self.image, self.rect = load_image("simple_red1.png", scale=0.032)
+        else:
+            self.image, self.rect = load_image("fireball4.png", scale=0.044)
         self.direction = self.getDirection()
         self.speed = 14
         self.x_vel, self.y_vel = self.getVel()
@@ -164,7 +167,6 @@ class Player(pg.sprite.Sprite):
         self.rect.topleft = (x-1, y)
 
 
-
 WIN_WIDTH = 256
 WIN_HEIGHT = 256
 BUMP_DIST = 3
@@ -194,9 +196,11 @@ class GameState:
         self.score = 0
         self.vel = 9
         self.obstacles = []
-        self.mintime = 150
-        self.maxtime = 200
-        pg.time.set_timer(USEREVENT + 2, random.randrange(self.mintime, self.maxtime)) # determines how often we generate a fireball
+        self.mintime = 250
+        self.maxtime = 325
+
+        # start fireball generation
+        pg.time.set_timer(USEREVENT + 2, random.randrange(self.mintime, self.maxtime))
 
     def frame_step(self, action):
 
@@ -214,33 +218,31 @@ class GameState:
         # TODO - fix this
         self.score += (10 / 6)
 
+        # collision detection
+        # assume both images are squares
+        player_radius = self.player.rect.width / 2
         player_c_x, player_c_y = self.player.rect.topleft
-        player_c_x += self.player.rect.width / 2
-        player_c_y += self.player.rect.height / 2
+        player_c_x += player_radius
+        player_c_y += player_radius
 
         for obstacle in self.obstacles:
             # move the obstacle
             obstacle.x += obstacle.x_vel
             obstacle.y += obstacle.y_vel
 
-            # if obstacle.x <= -1 or obstacle.y <= -1 or obstacle.x >= WIN_WIDTH + 1 or obstacle.y >= WIN_HEIGHT + 1:
-            #     self.obstacles.pop(self.obstacles.index(obstacle))
-            # else:
-            #     obstacle.draw(self.screen)
+            obs_radius = int (obstacle.rect.width / 2)
+            obs_c_x = obstacle.x + obs_radius
+            obs_c_y = obstacle.y + obs_radius
 
-            fireball_radius = int (obstacle.rect.width / 2)
-            obs_c_x = obstacle.x + fireball_radius
-            obs_c_y = obstacle.y + fireball_radius
-
+            # find distance between centers
             distance = math.dist((player_c_x, player_c_y), (obs_c_x, obs_c_y))
 
-            # if distance < fireball_radius + player_radius:
-            if distance < 32:
-                print("I got hit")
+            if distance < player_radius + player_radius:
+                print("I got hit!")
                 print("Final score:", self.score)
-                self.reset()
                 image_data = pg.surfarray.array3d(pg.display.get_surface())
-                return image_data, -100, True, self.score
+                self.reset()
+                return image_data, -15, True, self.score
 
         # TODO - obs gen
         for event in pg.event.get():
@@ -284,16 +286,9 @@ class GameState:
             return key_direction[0] * self.player.speed, key_direction[1] * self.player.speed
 
     def reset(self):
-        # pg.init()
-        # self.screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+        print("Resetting game")
         self.obstacles = []
-        # pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
-
-        # Fill background
-        # self.background = pg.image.load("resources/background.jpg") if not simple else pg.image.load("resources/white_color.png")
-        # self.background = pg.transform.scale(self.background, self.screen.get_size())
-        # self.background = self.background.convert()
         self.score = 0
         self.player = Player()
         self.allsprites = pg.sprite.RenderPlain((self.player))
-        print("Reseting game")
+
