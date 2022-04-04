@@ -244,14 +244,13 @@ class GameState:
                 self.reset()
                 return image_data, -15, True, self.score
 
-            elif 32<= distance < 64:
-                print ("close one!")
-
-                reward =  1/((distance-20)**2) * (10/6)
-
-            else:
-                reward = 10/6
-
+            # elif 32<= distance < 64:
+            #     print ("close one!")
+            #
+            #     reward =  1/((distance-20)**2) * (10/6)
+            #
+            # else:
+            #     reward = 10/6
 
         # TODO - obs gen
         for event in pg.event.get():
