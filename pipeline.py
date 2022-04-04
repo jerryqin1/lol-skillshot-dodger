@@ -285,7 +285,7 @@ class GameState:
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
         self.clock.tick(FPS)
-        return image_data, reward, False, self.score
+        return image_data, (10. / 6), False, self.score
 
     def get_vel(self, key_direction):
         if key_direction[0] != 0 and key_direction[1] != 0:
