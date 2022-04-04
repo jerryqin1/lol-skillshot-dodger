@@ -244,6 +244,15 @@ class GameState:
                 self.reset()
                 return image_data, -15, True, self.score
 
+            elif 32<= distance < 64:
+                print ("close one!")
+
+                reward =  1/((distance-20)**2) * (10/6)
+
+            else:
+                reward = 10/6
+
+
         # TODO - obs gen
         for event in pg.event.get():
             # generate a new fireball
@@ -277,7 +286,7 @@ class GameState:
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
         self.clock.tick(FPS)
-        return image_data, (10 / 6), False, self.score
+        return image_data, reward, False, self.score
 
     def get_vel(self, key_direction):
         if key_direction[0] != 0 and key_direction[1] != 0:
