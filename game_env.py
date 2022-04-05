@@ -241,7 +241,7 @@ class GameEnv(gym.Env):
 
     def reset(self):
         self.obstacles = []
-        pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
+        # pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
 
         # Fill background
         self.background = pg.image.load("resources/background.jpg") if not simple else pg.image.load(
