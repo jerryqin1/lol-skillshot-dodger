@@ -15,7 +15,7 @@ FPS = 60
 NUM_ACTIONS = 9
 
 simple = True
-os.environ["SDL_VIDEODRIVER"] = 'dummy'
+# os.environ["SDL_VIDEODRIVER"] = 'dummy'
 
 
 def check_bump(x_pos, y_pos, sprite_width, sprite_height):
@@ -198,8 +198,8 @@ class GameEnv(gym.Env):
 
             # if distance < fireball_radius + player_radius:
             if distance < 32:
-                print("I got hit")
-                print("Final score:", self.score)
+                # print("I got hit")
+                # print("Final score:", self.score)
                 image_data = pg.surfarray.array3d(pg.display.get_surface())
                 x_t = cv2.cvtColor(cv2.resize(image_data, (80, 80)), cv2.COLOR_BGR2GRAY)
                 return x_t, -100, True, {}
@@ -258,7 +258,8 @@ class GameEnv(gym.Env):
         return x_t
 
     def render(self, mode="human"):
-        os.environ["SDL_VIDEODRIVER"] = self.renderval
+        # os.environ["SDL_VIDEODRIVER"] = self.renderval
+        pass
 
     def unrender(self):
         os.environ["SDL_VIDEODRIVER"] = 'dummy'
