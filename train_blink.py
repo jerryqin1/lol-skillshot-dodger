@@ -149,6 +149,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     # rewards[1] = running average reward
     # rewards[2] = running average reward over past 100 episodes
     rewards = [[], [], []]
+    readouts = []
 
     action_history = np.zeros(ACTIONS)
 
@@ -159,6 +160,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
         # get all the actions from the network
         readout_t = readout.eval(feed_dict={s: [s_t]})[0]
         # print(readout_t)
+        readouts.append(tuple(readout_t))
 
         a_t = np.zeros([ACTIONS])
 
@@ -284,6 +286,7 @@ def train_test(s, readout, _, sess, testing=False, episodes=20000):
     else:
         saver.save(sess, 'saved_networks_v1/' + GAME + '-dqn', global_step=t)
         save_training_data('training_reward_val', rewards)
+        save_q_values('training_q_values', readouts)
         print('TRAINING COMPLETE')
         print("SAVED SUCCESSFULLY")
 
@@ -297,10 +300,21 @@ def save_training_data(file_name, rewards):
         write.writerow(columns)
         write.writerows(data)
 
-    print('DATA SAVED SUCCESSFULLY!')
+    print('REWARD DATA SAVED SUCCESSFULLY!')
+
+
+def save_q_values(file_name, q_values):
+    columns = ["0", "1", "2", "3", "4", "5", "6", "7", "8"]
+
+    with open('q_values/{}.csv'.format(file_name), 'w', newline='') as csvfile:
+        write = csv.writer(csvfile)
+        write.writerow(columns)
+        write.writerows(q_values)
+
+    print('Q-VALUE DATA SAVED SUCCESSFULLY!')
 
 
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
     input_layer, readout, hidden_fully_connected_1 = create_network()
-    train_test(input_layer, readout, hidden_fully_connected_1, sess, False, 10000)
+    train_test(input_layer, readout, hidden_fully_connected_1, sess, False, 1250)

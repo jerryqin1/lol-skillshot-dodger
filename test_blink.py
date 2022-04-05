@@ -35,6 +35,18 @@ def plot_single_training_reward_curve():
     plt.show()
 
 
+# plots a single training reward curve for a specific state space representation
+def plot_single_training_q_value_curve():
+    print('trying to plot stuff!')
+    df = pd.read_csv("q_values/training_q_values.csv")
+    df[["0", "1", "2", "3", "4", "5", "6", "7", "8"]].plot()
+    plt.ylabel('q_value')
+    plt.xlabel('episode')
+    plt.title('q_value training curve')
+    plt.legend()
+    plt.show()
+
+
 # plots the 10 episode testing rewards of each state space representation
 def plot_testing_rewards():
     df = pd.read_csv("rewards/testing_reward_val.csv")
@@ -49,6 +61,7 @@ def plot_testing_rewards():
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
     input_layer, readout, hidden_fully_connected_1 = create_network()
+    plot_single_training_q_value_curve()
     train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 10)
     plot_single_training_reward_curve()
     #plot_testing_rewards()
