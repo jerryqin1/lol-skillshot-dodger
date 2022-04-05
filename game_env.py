@@ -8,14 +8,14 @@ import math
 import random
 import cv2
 
-WIN_WIDTH = 512
-WIN_HEIGHT = 512
+WIN_WIDTH = 256
+WIN_HEIGHT = 256
 BUMP_DIST = 3
 FPS = 60
 NUM_ACTIONS = 9
 
 simple = True
-# os.environ["SDL_VIDEODRIVER"] = 'dummy'
+os.environ["SDL_VIDEODRIVER"] = 'dummy'
 
 
 def check_bump(x_pos, y_pos, sprite_width, sprite_height):
@@ -160,7 +160,7 @@ class GameEnv(gym.Env):
         self.observation_space = spaces.Box(low=0, high=255, shape=(80, 80), dtype=np.uint8)
 
         # self.renderval = os.environ["SDL_VIDEODRIVER"]
-        os.environ["SDL_VIDEODRIVER"] = 'dummy'
+        # os.environ["SDL_VIDEODRIVER"] = 'dummy'
         pg.init()
         self.screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
         self.clock = pg.time.Clock()
@@ -237,7 +237,7 @@ class GameEnv(gym.Env):
         image_data = pg.surfarray.array3d(pg.display.get_surface())
         x_t = cv2.cvtColor(cv2.resize(image_data, (80, 80)), cv2.COLOR_BGR2GRAY)
         self.clock.tick(FPS)
-        return x_t, 1, False, {}
+        return x_t, 10, False, {}
 
     def reset(self):
         self.obstacles = []
