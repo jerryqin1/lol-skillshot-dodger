@@ -157,10 +157,11 @@ class GameEnv(gym.Env):
     def __init__(self):
         super(GameEnv, self).__init__()
         self.action_space = spaces.Discrete(NUM_ACTIONS)
-        self.observation_space = spaces.Box(low=0, high=255, shape=(80, 80), dtype=np.uint8)
+        self.observation_space = spaces.Box(low=0, high=255, shape=(80, 80, 1), dtype=np.uint8)
 
         # self.renderval = os.environ["SDL_VIDEODRIVER"]
         # os.environ["SDL_VIDEODRIVER"] = 'dummy'
+        os.environ["SDL_VIDEODRIVER"] = 'windib'
         pg.init()
         self.screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
         self.clock = pg.time.Clock()
@@ -202,6 +203,7 @@ class GameEnv(gym.Env):
                 # print("Final score:", self.score)
                 image_data = pg.surfarray.array3d(pg.display.get_surface())
                 x_t = cv2.cvtColor(cv2.resize(image_data, (80, 80)), cv2.COLOR_BGR2GRAY)
+                x_t = x_t[:, :, np.newaxis]
                 return x_t, -100, True, {}
 
         for event in pg.event.get():
@@ -236,6 +238,7 @@ class GameEnv(gym.Env):
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
         x_t = cv2.cvtColor(cv2.resize(image_data, (80, 80)), cv2.COLOR_BGR2GRAY)
+        x_t = x_t[:, :, np.newaxis]
         self.clock.tick(FPS)
         return x_t, 10, False, {}
 
@@ -254,11 +257,12 @@ class GameEnv(gym.Env):
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
         x_t = cv2.cvtColor(cv2.resize(image_data, (80, 80)), cv2.COLOR_BGR2GRAY)
+        x_t = x_t[:, :, np.newaxis]
 
         return x_t
 
     def render(self, mode="human"):
-        # os.environ["SDL_VIDEODRIVER"] = self.renderval
+        os.environ["SDL_VIDEODRIVER"] = 'windib'
         pass
 
     def unrender(self):
