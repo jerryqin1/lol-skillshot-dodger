@@ -27,8 +27,6 @@ def build_model(height, width, channels, actions):
     model.add(Dense(actions, activation='linear'))
     return model
 
-model = build_model(height, width, channels, actions)
-
 def build_agent(model, actions):
     policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., value_min=.1, value_test=.2, nb_steps=10000)
     memory = SequentialMemory(limit=1000, window_length=3)
@@ -38,8 +36,15 @@ def build_agent(model, actions):
                    )
     return dqn
 
+
+model = build_model(height, width, channels, actions)
 dqn = build_agent(model, actions)
 dqn.compile(Adam(lr=1e-4))
 print('done')
 
 dqn.fit(env, nb_steps=10000, visualize=False, verbose=2)
+
+print('done training!')
+
+scores = dqn.test(env, nb_episodes=10, visualize=True)
+print(np.mean(scores.history['episode_reward']))

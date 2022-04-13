@@ -173,8 +173,11 @@ class GameEnv(gym.Env):
         self.allsprites = pg.sprite.RenderPlain((self.player))
         self.vel = 9
         self.obstacles = []
+        self.max_obstacles = 4
         self.mintime = 150
         self.maxtime = 200
+        # self.mintime = 250
+        # self.maxtime = 300
         pg.time.set_timer(USEREVENT + 2,
                           random.randrange(self.mintime, self.maxtime))  # determines how often we generate a fireball
 
@@ -208,7 +211,7 @@ class GameEnv(gym.Env):
 
         for event in pg.event.get():
             # generate a new fireball
-            if event.type == USEREVENT + 2:
+            if event.type == USEREVENT + 2 and len(self.obstacles) < self.max_obstacles:
                 self.obstacles.append(Fireball())
 
         key_direction = self.get_vel(self.player.ACTION_MAP[action])
@@ -230,11 +233,16 @@ class GameEnv(gym.Env):
         self.screen.blit(self.background, (0, 0))
         self.allsprites.draw(self.screen)
 
+        tmp_obstacles = []
         for obstacle in self.obstacles:
             if obstacle.x <= -1 or obstacle.y <= -1 or obstacle.x >= WIN_WIDTH + 1 or obstacle.y >= WIN_HEIGHT + 1:
-                self.obstacles.pop(self.obstacles.index(obstacle))
+                # self.obstacles.pop(self.obstacles.index(obstacle))
+                continue
             else:
+                tmp_obstacles.append(obstacle)
                 obstacle.draw(self.screen)
+
+        self.obstacles = tmp_obstacles
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
         x_t = cv2.cvtColor(cv2.resize(image_data, (80, 80)), cv2.COLOR_BGR2GRAY)
@@ -262,7 +270,7 @@ class GameEnv(gym.Env):
         return x_t
 
     def render(self, mode="human"):
-        os.environ["SDL_VIDEODRIVER"] = 'windib'
+        # os.environ["SDL_VIDEODRIVER"] = 'windib'
         pass
 
     def unrender(self):
