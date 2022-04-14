@@ -28,8 +28,8 @@ def build_model(height, width, channels, actions):
     return model
 
 def build_agent(model, actions):
-    policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., value_min=.1, value_test=.2, nb_steps=10000)
-    memory = SequentialMemory(limit=1000, window_length=3)
+    policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., value_min=.1, value_test=0., nb_steps=20000)
+    memory = SequentialMemory(limit=5000, window_length=3)
     dqn = DQNAgent(model=model, memory=memory, policy=policy,
                    enable_dueling_network=True, dueling_type='avg',
                    nb_actions=actions, nb_steps_warmup=1000
@@ -39,12 +39,16 @@ def build_agent(model, actions):
 
 model = build_model(height, width, channels, actions)
 dqn = build_agent(model, actions)
+
 dqn.compile(Adam(lr=1e-4))
+dqn.load_weights('models/dqn2.hdf5')
 print('done')
 
-dqn.fit(env, nb_steps=10000, visualize=False, verbose=2)
+dqn.fit(env, nb_steps=100000, visualize=False, verbose=2)
 
 print('done training!')
 
-scores = dqn.test(env, nb_episodes=10, visualize=True)
+scores = dqn.test(env, nb_episodes=10, visualize=False)
 print(np.mean(scores.history['episode_reward']))
+
+dqn.save_weights('models/dqn2.hdf5')
