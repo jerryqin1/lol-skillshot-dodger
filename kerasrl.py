@@ -1,7 +1,7 @@
-import gym
-import random
+import sys
 from game_env import GameEnv
 import numpy as np
+import matplotlib.pyplot as plt
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Convolution2D
 from tensorflow.keras.optimizers import Adam
@@ -14,7 +14,6 @@ env = GameEnv()
 height, width, channels = env.observation_space.shape
 actions = env.action_space.n
 
-print('done')
 
 def build_model(height, width, channels, actions):
     model = Sequential()
@@ -26,6 +25,7 @@ def build_model(height, width, channels, actions):
     model.add(Dense(256, activation='relu'))
     model.add(Dense(actions, activation='linear'))
     return model
+
 
 def build_agent(model, actions):
     policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., value_min=.1, value_test=0., nb_steps=20000)
@@ -40,15 +40,17 @@ def build_agent(model, actions):
 model = build_model(height, width, channels, actions)
 dqn = build_agent(model, actions)
 
-dqn.compile(Adam(lr=1e-4))
-dqn.load_weights('models/dqn2.hdf5')
-print('done')
+dqn.compile(Adam(learning_rate=1e-4))
 
-dqn.fit(env, nb_steps=100000, visualize=False, verbose=2)
+w_file = "dqn_weights.hdf5"
+if sys.argv == "train":
+    # dqn.load_weights('models/' + w_file)
+    h = dqn.fit(env, nb_steps=10000, visualize=False, verbose=2)
+    print('done training!')
+    # show graph
+    print(list(h.history.keys()))
+    dqn.save_weights('models/dqn2.hdf5')
+elif sys.argv == "test":
+    scores = dqn.test(env, nb_episodes=10, visualize=False)
+    print(np.mean(scores.history['episode_reward']))
 
-print('done training!')
-
-scores = dqn.test(env, nb_episodes=10, visualize=False)
-print(np.mean(scores.history['episode_reward']))
-
-dqn.save_weights('models/dqn2.hdf5')

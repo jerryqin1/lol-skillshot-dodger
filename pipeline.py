@@ -7,6 +7,7 @@ import numpy as np
 import os
 import pygame as pg
 from pygame.locals import *
+import cv2
 
 simple = True
 
@@ -284,6 +285,10 @@ class GameState:
                 obstacle.draw(self.screen)
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
+        image_data = cv2.cvtColor(cv2.resize(image_data, (80, 80)), cv2.COLOR_BGR2GRAY)
+        print(image_data.shape)
+        image_data = image_data[:, :, np.newaxis]
+        print(image_data.shape)
         self.clock.tick(FPS)
         return image_data, (10. / 6), False, self.score
 

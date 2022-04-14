@@ -5,7 +5,7 @@ from stable_baselines3 import DQN
 env = GameEnv()
 
 model = DQN('CnnPolicy', env, learning_starts=25000, verbose=1)
-model.learn(total_timesteps=1000000)
+model.learn(total_timesteps=1000)
 
 model.save('sb3/test_model')
 
