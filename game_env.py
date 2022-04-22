@@ -270,7 +270,7 @@ class GameEnv(gym.Env):
         return x_t
 
     def render(self, mode="human"):
-        # os.environ["SDL_VIDEODRIVER"] = 'windib'
+        os.environ["SDL_VIDEODRIVER"] = 'windib'
         pass
 
     def unrender(self):
