@@ -1,9 +1,2 @@
-venv
-.idea
-.idea/
 __pycache__/
-net_score_cache_v1_game_over.txt
-saved_networks_v1/
-saved_networks_v2/
-rewards/
-q_values/
+.idea/

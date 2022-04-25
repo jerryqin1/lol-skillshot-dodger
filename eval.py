@@ -14,7 +14,7 @@ height, width, channels = env.observation_space.shape
 actions = env.action_space.n
 
 model_path = "models/"
-model_name = "dqn4.hdf5"
+model_name = "dqn_winsize2_5.hdf5"
 
 num_episodes = 1000
 
