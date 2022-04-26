@@ -138,8 +138,8 @@ def main():
         for obstacle in obstacles:
             obstacle.update()
 
-        scoretext = font.render("Score: " + str(score), True, (255, 255, 255), (0, 0, 0))
-        screen.blit(scoretext, (5, 5))
+        # scoretext = font.render("Score: " + str(score), True, (255, 255, 255), (0, 0, 0))
+        # screen.blit(scoretext, (5, 5))
 
         # Draw Everything
         pg.display.update()
