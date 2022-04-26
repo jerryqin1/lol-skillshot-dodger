@@ -326,8 +326,8 @@ class GameEnv(gym.Env):
             for obstacle in self.obstacles:
                 obstacle.update()
 
-            scoretext = self.font.render("Score: " + str(self.score), True, (255, 255, 255), (0, 0, 0))
-            self.screen.blit(scoretext, (5, 5))
+            # scoretext = self.font.render("Score: " + str(self.score), True, (255, 255, 255), (0, 0, 0))
+            # self.screen.blit(scoretext, (5, 5))
 
             # Draw Everything
             pg.display.update()
