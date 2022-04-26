@@ -12,6 +12,9 @@ from rl.policy import LinearAnnealedPolicy, EpsGreedyQPolicy
 import multiprocessing
 from gym.utils import play
 
+
+TRIALS = 10
+
 def _seed(self, seed=None):
 		self.np_random, seed = gym.utils.seeding.np_random(seed)
 		self.robot.np_random = self.np_random # use the same np_randomizer for robot as for env
@@ -43,15 +46,21 @@ def modelPlay():
     # show graph
     # dqn.save_weights(models_dir + save_file, overwrite=True)
 
-    scores = dqn.test(env, nb_episodes=10, visualize=False)
-    print(np.mean(scores.history['episode_reward']))
+    scores = dqn.test(env, nb_episodes=TRIALS, visualize=False)
+    print("average model score over", TRIALS, " trials is: ", np.mean(scores.history['episode_reward']))
+    plt.plot(np.arange(1, 11), scores.history["episode_reward"])
+    plt.title("Episodic Model Reward")
+    plt.show()
 
 
 def humanPlay():
     env = GameEnv()
     # play.play(env)
-    env.playGame(10)
-
+    scores = env.playGame(TRIALS)
+    print("average human score over", TRIALS, " trials is: ", np.mean(scores))
+    plt.plot(np.arange(1, 11), scores)
+    plt.title("Episodic Human Reward")
+    plt.show()
 
 
 if __name__ == "__main__":

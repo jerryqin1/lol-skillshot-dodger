@@ -178,6 +178,7 @@ class GameEnv(gym.Env):
         self.mintime = 150
         self.maxtime = 200
         self.score = 0
+        self.font = pg.font.SysFont("comic sans", 15)
         # self.mintime = 250
         # self.maxtime = 300
         pg.time.set_timer(USEREVENT + 2,
@@ -209,6 +210,7 @@ class GameEnv(gym.Env):
                 image_data = pg.surfarray.array3d(pg.display.get_surface())
                 x_t = cv2.cvtColor(cv2.resize(image_data, (80, 80)), cv2.COLOR_BGR2GRAY)
                 x_t = x_t[:, :, np.newaxis]
+                self.score -= 100
                 return x_t, -100, True, {}
 
         for event in pg.event.get():
@@ -246,22 +248,29 @@ class GameEnv(gym.Env):
 
         self.obstacles = tmp_obstacles
 
+        scoretext = self.font.render("Score: " + str(self.score), True, (255, 255, 255), (0, 0, 0))
+        self.screen.blit(scoretext, (5, 5))
+
+        # Draw Everything
+        pg.display.update()
+        self.screen.blit(self.background, (0, 0))
+
         image_data = pg.surfarray.array3d(pg.display.get_surface())
         x_t = cv2.cvtColor(cv2.resize(image_data, (80, 80)), cv2.COLOR_BGR2GRAY)
         x_t = x_t[:, :, np.newaxis]
+        self.score += 10
         self.clock.tick(FPS)
         return x_t, 10, False, {}
 
     def playGame(self, episodes):
         count = 1
+        scores = []
         # Initialise screen
-        self.clock.tick(60)
         pg.display.set_caption('Skillshot Dodger')
-        font = pg.font.SysFont("comic sans", 40)
 
         while count <= episodes:
             pg.event.pump()
-            self.score += 1/6
+            self.score += 10
 
             player_c_x, player_c_y = self.player.rect.topleft
             player_c_x += self.player.rect.width / 2
@@ -283,8 +292,10 @@ class GameEnv(gym.Env):
                 # if distance < fireball_radius + player_radius:
                 if distance < 32:
                     print("I got hit")
+                    self.score -= 100
                     print("Final score:", self.score)
                     count += 1
+                    scores.append(self.score)
                     self.reset()
                     continue
 
@@ -315,7 +326,7 @@ class GameEnv(gym.Env):
             for obstacle in self.obstacles:
                 obstacle.update()
 
-            scoretext = font.render("Score: " + str(self.score), True, (255, 255, 255), (0, 0, 0))
+            scoretext = self.font.render("Score: " + str(self.score), True, (255, 255, 255), (0, 0, 0))
             self.screen.blit(scoretext, (5, 5))
 
             # Draw Everything
@@ -333,6 +344,8 @@ class GameEnv(gym.Env):
                     obstacle.draw(self.screen)
 
             self.obstacles = tmp_obstacles
+            self.clock.tick(FPS)
+        return scores
 
     def reset(self):
         self.obstacles = []
