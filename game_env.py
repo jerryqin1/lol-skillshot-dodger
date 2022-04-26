@@ -7,6 +7,7 @@ from pygame.locals import USEREVENT
 import math
 import random
 import cv2
+from pygame.locals import *
 
 WIN_WIDTH = 256
 WIN_HEIGHT = 256
@@ -177,6 +178,8 @@ class GameEnv(gym.Env):
         self.max_obstacles = 4
         self.mintime = 150
         self.maxtime = 200
+        self.score = 0
+        self.font = pg.font.SysFont("comic sans", 15)
         # self.mintime = 250
         # self.maxtime = 300
         pg.time.set_timer(USEREVENT + 2,
@@ -208,6 +211,7 @@ class GameEnv(gym.Env):
                 image_data = pg.surfarray.array3d(pg.display.get_surface())
                 x_t = cv2.cvtColor(cv2.resize(image_data, (self.obs_size, self.obs_size), interpolation=cv2.INTER_NEAREST), cv2.COLOR_BGR2GRAY)
                 x_t = x_t[:, :, np.newaxis]
+                self.score -= 100
                 return x_t, -100, True, {}
 
         for event in pg.event.get():
@@ -245,11 +249,104 @@ class GameEnv(gym.Env):
 
         self.obstacles = tmp_obstacles
 
+        scoretext = self.font.render("Score: " + str(self.score), True, (255, 255, 255), (0, 0, 0))
+        self.screen.blit(scoretext, (5, 5))
+
+        # Draw Everything
+        pg.display.update()
+        self.screen.blit(self.background, (0, 0))
+
         image_data = pg.surfarray.array3d(pg.display.get_surface())
         x_t = cv2.cvtColor(cv2.resize(image_data, (self.obs_size, self.obs_size), interpolation=cv2.INTER_NEAREST), cv2.COLOR_BGR2GRAY)
         x_t = x_t[:, :, np.newaxis]
+        self.score += 10
         self.clock.tick(FPS)
         return x_t, 10, False, {}
+
+    def playGame(self, episodes):
+        count = 1
+        scores = []
+        # Initialise screen
+        pg.display.set_caption('Skillshot Dodger')
+
+        while count <= episodes:
+            pg.event.pump()
+            self.score += 10
+
+            player_c_x, player_c_y = self.player.rect.topleft
+            player_c_x += self.player.rect.width / 2
+            player_c_y += self.player.rect.height / 2
+            # player_radius = math.sqrt((player.rect.width / 2) ** 2 +(player.rect.height / 2) ** 2)
+            # player_radius = 34
+
+            for obstacle in self.obstacles:
+                # move the obstacle
+                obstacle.x += obstacle.x_vel
+                obstacle.y += obstacle.y_vel
+
+                fireball_radius = int(obstacle.rect.width / 2)
+                obs_c_x = obstacle.x + fireball_radius
+                obs_c_y = obstacle.y + fireball_radius
+
+                distance = math.dist((player_c_x, player_c_y), (obs_c_x, obs_c_y))
+
+                # if distance < fireball_radius + player_radius:
+                if distance < 32:
+                    print("I got hit")
+                    self.score -= 100
+                    print("Final score:", self.score)
+                    count += 1
+                    scores.append(self.score)
+                    self.reset()
+                    continue
+
+            for event in pg.event.get():
+                # generate a new fireball
+                if event.type == USEREVENT + 2 and len(self.obstacles) < self.max_obstacles:
+                    self.obstacles.append(Fireball())
+
+                if event.type == QUIT:
+                    return
+                pressed_keys = pg.key.get_pressed()
+
+                key_direction = np.array([0, 0])
+                if pressed_keys[K_LEFT]: key_direction[0] = -5
+                if pressed_keys[K_RIGHT]: key_direction[0] = 5
+                if pressed_keys[K_DOWN]: key_direction[1] = 5
+                if pressed_keys[K_UP]: key_direction[1] = -5
+                if pressed_keys[K_ESCAPE]: return
+
+
+                x, y = self.player.rect.topleft
+                x, y = check_bump(x + key_direction[0], y + key_direction[1], 40, 32)
+                self.player.rect.topleft = (x, y)
+
+                # print(key_direction)
+
+            self.allsprites.update()
+            for obstacle in self.obstacles:
+                obstacle.update()
+
+            scoretext = self.font.render("Score: " + str(self.score), True, (255, 255, 255), (0, 0, 0))
+            self.screen.blit(scoretext, (5, 5))
+
+            # Draw Everything
+            pg.display.update()
+            self.screen.blit(self.background, (0, 0))
+            self.allsprites.draw(self.screen)
+
+            tmp_obstacles = []
+            for obstacle in self.obstacles:
+                if obstacle.x <= -1 or obstacle.y <= -1 or obstacle.x >= WIN_WIDTH + 1 or obstacle.y >= WIN_HEIGHT + 1:
+                    # self.obstacles.pop(self.obstacles.index(obstacle))
+                    continue
+                else:
+                    tmp_obstacles.append(obstacle)
+                    obstacle.draw(self.screen)
+
+            self.obstacles = tmp_obstacles
+            self.clock.tick(FPS)
+        return scores
 
     def reset(self):
         self.obstacles = []
