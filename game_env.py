@@ -157,7 +157,8 @@ class GameEnv(gym.Env):
     def __init__(self):
         super(GameEnv, self).__init__()
         self.action_space = spaces.Discrete(NUM_ACTIONS)
-        self.observation_space = spaces.Box(low=0, high=255, shape=(80, 80, 1), dtype=np.uint8)
+        self.obs_size = 80
+        self.observation_space = spaces.Box(low=0, high=255, shape=(self.obs_size, self.obs_size, 1), dtype=np.uint8)
 
         # self.renderval = os.environ["SDL_VIDEODRIVER"]
         # os.environ["SDL_VIDEODRIVER"] = 'dummy'
@@ -205,7 +206,7 @@ class GameEnv(gym.Env):
                 # print("I got hit")
                 # print("Final score:", self.score)
                 image_data = pg.surfarray.array3d(pg.display.get_surface())
-                x_t = cv2.cvtColor(cv2.resize(image_data, (80, 80)), cv2.COLOR_BGR2GRAY)
+                x_t = cv2.cvtColor(cv2.resize(image_data, (self.obs_size, self.obs_size), interpolation=cv2.INTER_NEAREST), cv2.COLOR_BGR2GRAY)
                 x_t = x_t[:, :, np.newaxis]
                 return x_t, -100, True, {}
 
@@ -245,7 +246,7 @@ class GameEnv(gym.Env):
         self.obstacles = tmp_obstacles
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
-        x_t = cv2.cvtColor(cv2.resize(image_data, (80, 80)), cv2.COLOR_BGR2GRAY)
+        x_t = cv2.cvtColor(cv2.resize(image_data, (self.obs_size, self.obs_size), interpolation=cv2.INTER_NEAREST), cv2.COLOR_BGR2GRAY)
         x_t = x_t[:, :, np.newaxis]
         self.clock.tick(FPS)
         return x_t, 10, False, {}
@@ -264,7 +265,7 @@ class GameEnv(gym.Env):
         self.allsprites = pg.sprite.RenderPlain((self.player))
 
         image_data = pg.surfarray.array3d(pg.display.get_surface())
-        x_t = cv2.cvtColor(cv2.resize(image_data, (80, 80)), cv2.COLOR_BGR2GRAY)
+        x_t = cv2.cvtColor(cv2.resize(image_data, (self.obs_size, self.obs_size), interpolation=cv2.INTER_NEAREST), cv2.COLOR_BGR2GRAY)
         x_t = x_t[:, :, np.newaxis]
 
         return x_t
