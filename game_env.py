@@ -252,14 +252,16 @@ class GameEnv(gym.Env):
         self.clock.tick(FPS)
         return x_t, 10, False, {}
 
-    def playGame(self):
+    def playGame(self, episodes):
+        count = 1
         # Initialise screen
         self.clock.tick(60)
         pg.display.set_caption('Skillshot Dodger')
         font = pg.font.SysFont("comic sans", 40)
 
-        while True:
-            self.score += 1
+        while count <= episodes:
+            pg.event.pump()
+            self.score += 1/6
 
             player_c_x, player_c_y = self.player.rect.topleft
             player_c_x += self.player.rect.width / 2
@@ -282,7 +284,9 @@ class GameEnv(gym.Env):
                 if distance < 32:
                     print("I got hit")
                     print("Final score:", self.score)
+                    count += 1
                     self.reset()
+                    continue
 
             for event in pg.event.get():
                 # generate a new fireball
@@ -298,14 +302,8 @@ class GameEnv(gym.Env):
                 if pressed_keys[K_RIGHT]: key_direction[0] = 5
                 if pressed_keys[K_DOWN]: key_direction[1] = 5
                 if pressed_keys[K_UP]: key_direction[1] = -5
+                if pressed_keys[K_ESCAPE]: return
 
-                # key_direction *= dt # ?? - keeps frames consistent but its very fast
-                # TODO: no fractional movement
-                # Idea - keep track of actual position and round before displaying to screen
-                # norm = np.linalg.norm(key_direction)
-                # if norm > 0:
-                #     key_direction = key_direction / norm
-                #     print(key_direction)
 
                 x, y = self.player.rect.topleft
                 x, y = check_bump(x + key_direction[0], y + key_direction[1], 40, 32)
@@ -368,6 +366,3 @@ class GameEnv(gym.Env):
                 math.sqrt(self.player.speed) / 2)
         else:
             return key_direction[0] * self.player.speed, key_direction[1] * self.player.speed
-
-    def get_keys_to_action(self):
-        return {(): 1, (276,): 0, (275,): 2, (275, 276): 1}

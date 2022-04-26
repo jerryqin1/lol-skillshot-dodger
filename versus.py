@@ -50,13 +50,12 @@ def modelPlay():
 def humanPlay():
     env = GameEnv()
     # play.play(env)
-    env.playGame()
+    env.playGame(10)
 
 
 
 if __name__ == "__main__":
-    # p1 = multiprocessing.Process(target=modelPlay)
-    # p2 = multiprocessing.Process(target=humanPlay)
-    # #p1.start()
-    # p2.start()
-    humanPlay()
+    p1 = multiprocessing.Process(target=modelPlay)
+    p2 = multiprocessing.Process(target=humanPlay)
+    p1.start()
+    p2.start()
