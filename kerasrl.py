@@ -2,11 +2,19 @@ import os
 
 gpu = True
 if gpu:
-    os.add_dll_directory("C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.5\\bin\\")
-    os.add_dll_directory("C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.5\\libnvvp\\")
-    os.add_dll_directory("C:\\Program Files\\NVIDIA GPU Computing Toolkit\CUDA\\v11.5\\extras\\CUPTI\\lib64\\")
-    os.add_dll_directory("C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.5\\include\\")
-    os.add_dll_directory("C:\\Program Files\\tools\\cuda1\\bin")
+    new_dir = os.add_dll_directory("C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.5\\")
+    new_dir.close()
+
+    # hi = os.add_dll_directory("C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.5\\bin\\")
+    # hi.close()
+    # hi = os.add_dll_directory("C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.5\\libnvvp\\")
+    # hi.close()
+    # hi = os.add_dll_directory("C:\\Program Files\\NVIDIA GPU Computing Toolkit\CUDA\\v11.5\\extras\\CUPTI\\lib64\\")
+    # hi.close()
+    # hi = os.add_dll_directory("C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.5\\include\\")
+    # hi.close()
+    # hi = os.add_dll_directory("C:\\Program Files\\tools\\cuda1\\bin")
+    # hi.close()
 
 from game_env import GameEnv
 import numpy as np
@@ -46,7 +54,6 @@ def build_agent(model, actions):
 
 
 if __name__ == "__main__":
-
     env = GameEnv()
     height, width, channels = env.observation_space.shape
     actions = env.action_space.n
@@ -56,21 +63,43 @@ if __name__ == "__main__":
 
     dqn.compile(Adam(learning_rate=1e-4))
 
+    mode = "train"
     models_dir = "models/"
-    read_file = "dqn_winsize2_6.hdf5"
-    save_file = "dqn_winsize2_7.hdf5"
+    read_file = "none.hdf5"
+    save_file = "v1-1.hdf5"
 
-    if os.path.exists(models_dir + read_file):
-        dqn.load_weights(models_dir + read_file)
-        print("Loaded existing model")
-    else:
-        print("Could not find model at filepath")
+    if mode == "train":
+        if os.path.exists(models_dir + read_file):
+            dqn.load_weights(models_dir + read_file)
+            print("Loaded existing model")
+        else:
+            print("Could not find model at filepath")
+        h = dqn.fit(env, nb_steps=150000, visualize=False, verbose=2)
+        print('done training!')
 
-    h = dqn.fit(env, nb_steps=600000, visualize=False, verbose=2)
-    print('done training!')
+        # show graph
+        ep_reward = h.history['episode_reward']
+        average_ep_reward = []
+        for i in range(len(ep_reward)):
+            if i < 100:
+                average_ep_reward.append(np.mean(ep_reward[:i + 1]))
+            else:
+                average_ep_reward.append(np.mean(ep_reward[i - 99:i + 1]))
 
-    # show graph
-    # dqn.save_weights(models_dir + save_file, overwrite=True)
+        plt.plot(ep_reward)
+        plt.xlabel("episode")
+        plt.ylabel("reward")
+        plt.savefig("ep_reward.png")
+        plt.show()
 
-    scores = dqn.test(env, nb_episodes=100, visualize=False)
-    print(np.mean(scores.history['episode_reward']))
+        plt.plot(average_ep_reward)
+        plt.xlabel("episode")
+        plt.ylabel("average reward (last 100)")
+        plt.savefig("average_ep_reward.png")
+        plt.show()
+
+        dqn.save_weights('models/' + save_file)
+    elif mode == "test":
+        dqn.load_weights('models/' + read_file)
+        scores = dqn.test(env, nb_episodes=10, visualize=False)
+        print(np.mean(scores.history['episode_reward']))
