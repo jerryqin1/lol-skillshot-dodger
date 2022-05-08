@@ -15,7 +15,7 @@ Train an agent to play the game.
 Used by the kerasrl.py script to enable training. Implements a custom Gym environment.3892
 
 - eval.py <br>
-Evaluates model on the normal screen size.3892
+Evaluates model on the normal screen size.
 
 - eval_small.py <br>
 Evaluates model on the smaller screen size.
