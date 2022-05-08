@@ -31,6 +31,7 @@ from rl.policy import LinearAnnealedPolicy, EpsGreedyQPolicy
 window_size = 4
 
 
+# Build model to process image/state and output action
 def build_model(height, width, channels, actions):
     model = Sequential()
     model.add(Convolution2D(32, (8, 8), strides=(4, 4), activation='relu', input_shape=(window_size, height, width, channels)))
@@ -45,6 +46,7 @@ def build_model(height, width, channels, actions):
     return model
 
 
+# Build agent to process environment and output an action
 def build_agent(model, actions):
     policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., value_min=.1, value_test=0.,
                                   nb_steps=30000)
