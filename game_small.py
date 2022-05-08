@@ -9,8 +9,11 @@ import os
 import pygame as pg
 from pygame.locals import *
 
-WIN_WIDTH = 600
-WIN_HEIGHT = 600
+parser = argparse.ArgumentParser(description='Choose gameplay mode.')
+# parser.add_argument()
+
+WIN_WIDTH = 256
+WIN_HEIGHT = 256
 BUMP_DIST = 3
 
 simple = True
@@ -20,7 +23,11 @@ data_dir = os.path.join(main_dir, "resources")
 directions = ['N', 'E', 'W', 'S', 'NW', 'NE', 'SW', 'SE']
 
 
-# Function to ensure player does not move off screen
+### TODO:
+###      1. code refactoring: create wrapper for main() (hold it in a Game class) and allow for environemnt reset and runthrough
+###      2. fine tune collision parameters / hitboxes
+###      3.
+
 def check_bump(x_pos, y_pos, sprite_width, sprite_height):
     if x_pos <= 0:
         x_pos = BUMP_DIST
@@ -33,6 +40,7 @@ def check_bump(x_pos, y_pos, sprite_width, sprite_height):
         y_pos = WIN_HEIGHT - BUMP_DIST - sprite_height
 
     return x_pos, y_pos
+
 
 
 def main():
@@ -57,52 +65,51 @@ def main():
     screen.blit(background, [0, 0])
     pg.display.flip()
 
-    # Generate player
     player = Player()
+
     allsprites = pg.sprite.RenderPlain((player))
     clock = pg.time.Clock()
 
-    # Generate obstacles
     fireball = Fireball()
     fireball.draw(screen)
 
     obstacles.append(fireball)
     pg.key.set_repeat(2)
-    pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
 
+    pg.time.set_timer(USEREVENT + 2, random.randrange(150, 200))  # determines how often we generate a fireball
     # Event loop
     while True:
-        # Cap framerate at 60
+        # dt = clock.tick(120)
         clock.tick(60)
         score += 10
 
-        # Get center of player
         player_c_x, player_c_y = player.rect.topleft
         player_c_x += player.rect.width / 2
         player_c_y += player.rect.height / 2
+        # player_radius = math.sqrt((player.rect.width / 2) ** 2 +(player.rect.height / 2) ** 2)
+        # player_radius = 34
 
         for obstacle in obstacles:
             # move the obstacle
             obstacle.x += obstacle.x_vel
             obstacle.y += obstacle.y_vel
 
-            # Get center of obstacle
             fireball_radius = int(obstacle.rect.width / 2)
             obs_c_x = obstacle.x + fireball_radius
             obs_c_y = obstacle.y + fireball_radius
 
-            # Calculate distance
             distance = math.dist((player_c_x, player_c_y), (obs_c_x, obs_c_y))
 
-            # Distance threshold
+            # if distance < fireball_radius + player_radius:
             if distance < 32:
                 print("I got hit")
                 print("Final score:", score)
                 return
 
         for event in pg.event.get():
-            # generate a new fireball until max requirement is met
-            while len(obstacles) < 6:
+            # generate a new fireball
+            if event.type == USEREVENT + 2 and len(obstacles) < 4:
+                # while len(obstacles) < 4:
                 obstacles.append(Fireball())
 
             if event.type == QUIT:
@@ -115,15 +122,24 @@ def main():
             if pressed_keys[K_DOWN]: key_direction[1] = 1
             if pressed_keys[K_UP]: key_direction[1] = -1
 
+            # key_direction *= dt # ?? - keeps frames consistent but its very fast
+            # TODO: no fractional movement
+            # Idea - keep track of actual position and round before displaying to screen
+            # norm = np.linalg.norm(key_direction)
+            # if norm > 0:
+            #     key_direction = key_direction / norm
+            #     print(key_direction)
+
             x, y = player.rect.topleft
             x, y = check_bump(x + key_direction[0], y + key_direction[1], 40, 32)
             player.rect.topleft = (x, y)
+
+            # print(key_direction)
 
         allsprites.update()
         for obstacle in obstacles:
             obstacle.update()
 
-        # Text print
         scoretext = font.render("Score: " + str(score), True, (255, 255, 255), (0, 0, 0))
         screen.blit(scoretext, (5, 5))
 
@@ -132,7 +148,6 @@ def main():
         screen.blit(background, (0, 0))
         allsprites.draw(screen)
 
-        # Remove obstacles that aren't on screen
         next_obstacles = []
         for obstacle in obstacles:
             if obstacle.x <= -20 or obstacle.y <= -20 or obstacle.x >= WIN_WIDTH + 20 or obstacle.y >= WIN_HEIGHT + 20:
@@ -144,7 +159,6 @@ def main():
         obstacles = next_obstacles
 
 
-# Load image
 def load_image(name, colorkey=None, scale=1):
     fullname = os.path.join(data_dir, name)
     image = pg.image.load(fullname)
@@ -162,13 +176,10 @@ def load_image(name, colorkey=None, scale=1):
     return image, image.get_rect()
 
 
-# CLass that representst the Fireball sprite
 class Fireball(pg.sprite.Sprite):
     def __init__(self):
         # generate random location for the fireball on edge of screen
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
-
-        # Determines where Fireball will be initalized
         i = np.random.choice([0, 1])
         self.speed = 14
         if i % 2 == 0:
@@ -178,27 +189,22 @@ class Fireball(pg.sprite.Sprite):
             self.x = np.random.choice([0, WIN_WIDTH])
             self.y = np.random.randint(0, WIN_HEIGHT)
         self.rotateCount = 0
-
-        # Choose fireball image depending on if simple mode is enabled
         if not simple:
             self.image, self.rect = load_image("fireball4.png", scale=0.044)
         else:
             self.image, self.rect = load_image("simple_red1.png", scale=0.032)
-
-        # Set direction and speed
         self.direction = self.getDirection()
         self.x_vel, self.y_vel = self.getVel()
 
-    # Returns velocity of x and y
     def getVel(self):
         n = len(self.direction)
         x_vel = 0
         y_vel = 0
 
         MAX_SPD = self.speed
-        MIN_SPD = 1
+        MID_SPD = self.speed / 2
+        MIN_SPD = 0
 
-        # Give fireballs randoms speed depending on its direction
         if self.direction[0] == 'N':
             y_vel = -np.random.randint(MIN_SPD, MAX_SPD)
         elif self.direction[0] == 'S':
@@ -245,15 +251,16 @@ class Fireball(pg.sprite.Sprite):
                 return 'NW'
 
     def draw(self, screen):
+        # print("sheesh")
+        # self.hitbox = (self.x + 10, self.y + 10, 28, 10)  # defines the hitbox
+        # pg.draw.rect(screen, (255, 0, 0), self.hitbox, 2)
         screen.blit(self.image, (self.x, self.y))  # not sure why this is so choppy lol
 
 
-# Class that represents player
 class Player(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
-
-        # Load sprites depending on if simple mode is enabled
+        # self.image, self.rect = load_image("player-sprite.gif", scale=0.15)
         if not simple:
             self.image, self.rect = load_image("poro_icon.png", scale=1.7)
         else:
@@ -287,3 +294,5 @@ class Player(pg.sprite.Sprite):
 
 if __name__ == '__main__':
     main()
+
+
