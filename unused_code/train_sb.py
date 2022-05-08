@@ -1,5 +1,5 @@
 import gym
-from game_env import GameEnv
+from game_env_new_backup import GameEnv
 from stable_baselines3 import DQN
 
 env = GameEnv()

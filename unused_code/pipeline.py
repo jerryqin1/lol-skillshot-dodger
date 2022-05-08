@@ -28,7 +28,7 @@ def check_bump(x_pos, y_pos, sprite_width, sprite_height):
 
 # main_dir = os.path.split(os.path.abspath(__file__))[0]
 # data_dir = os.path.join("resources")
-data_dir = 'resources'
+data_dir = '../resources'
 
 
 def load_image(name, colorkey=None, scale=1.0):
@@ -189,7 +189,8 @@ class GameState:
         pg.init()
         self.screen = pg.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
         self.clock = pg.time.Clock()
-        self.background = pg.image.load("resources/background.jpg") if not simple else pg.image.load("resources/white_color.png")
+        self.background = pg.image.load("../resources/background.jpg") if not simple else pg.image.load(
+            "../resources/white_color.png")
         self.background = pg.transform.scale(self.background, self.screen.get_size())
         self.background = self.background.convert()
         self.player = Player()

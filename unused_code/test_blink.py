@@ -1,5 +1,5 @@
-from train import train_test
-from train import createNetwork
+from train_blink import train_test
+from train_blink import create_network
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,18 +10,23 @@ import cv2
 import sys
 import random
 import numpy as np
+import os
 from collections import deque
 
 
 testing = True
-seed = 2
+seed = 3
 np.random.seed(seed)
 random.seed(seed)
 tf.compat.v1.set_random_seed(seed)
 
-# plots a single traning reward curve for a specific state space representation
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+
+
+# plots a single training reward curve for a specific state space representation
 def plot_single_training_reward_curve():
-    df = pd.read_csv("rewards/training_reward_val.csv")
+    print('trying to plot stuff!')
+    df = pd.read_csv("../rewards/training_reward_val.csv")
     df[['reward', 'average reward', '100 episode average reward']].plot()
     plt.ylabel('reward')
     plt.xlabel('episode')
@@ -29,9 +34,22 @@ def plot_single_training_reward_curve():
     plt.legend()
     plt.show()
 
+
+# plots a single training reward curve for a specific state space representation
+def plot_single_training_q_value_curve():
+    print('trying to plot stuff!')
+    df = pd.read_csv("q_values/training_q_values.csv")
+    df[["0", "1", "2", "3", "4", "5", "6", "7", "8"]].plot()
+    plt.ylabel('q_value')
+    plt.xlabel('episode')
+    plt.title('q_value training curve')
+    plt.legend()
+    plt.show()
+
+
 # plots the 10 episode testing rewards of each state space representation
 def plot_testing_rewards():
-    df = pd.read_csv("rewards/testing_reward_val.csv")
+    df = pd.read_csv("../rewards/testing_reward_val.csv")
     df[['reward', 'average reward', '100 episode average reward']].plot()
     plt.ylabel('reward')
     plt.xlabel('episode')
@@ -39,10 +57,12 @@ def plot_testing_rewards():
     plt.legend()
     plt.show()
 
+
 if __name__ == "__main__":
     sess = tf.InteractiveSession()
-    input_layer, readout, hidden_fully_connected_1 = createNetwork()
+    input_layer, readout, hidden_fully_connected_1 = create_network()
+    plot_single_training_q_value_curve()
     train_test(input_layer, readout, hidden_fully_connected_1, sess, testing, 10)
     plot_single_training_reward_curve()
-    plot_testing_rewards()
+    #plot_testing_rewards()
 
